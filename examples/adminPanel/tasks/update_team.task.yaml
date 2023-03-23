@@ -1,0 +1,26 @@
+# Full reference: https://docs.airplane.dev/tasks/task-definition
+
+# Used by Airplane to identify your task. Do not change.
+slug: update_team
+
+# A human-readable name for your task.
+name: Update Team
+
+# A human-readable description for your task.
+# description: "My Airplane task"
+
+# A list of inputs to your task.
+parameters:
+  - slug: id
+    name: Account ID
+    type: integer
+  - slug: company_name
+    name: Name
+    type: shorttext
+
+sql:
+  resource: "[Demo DB]"
+  entrypoint: update_team.sql
+  queryArgs:
+    id: "{{params.id}}"
+    company_name: "{{params.company_name}}"

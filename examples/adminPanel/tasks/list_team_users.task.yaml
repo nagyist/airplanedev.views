@@ -1,0 +1,22 @@
+# Full reference: https://docs.airplane.dev/tasks/task-definition
+
+# Used by Airplane to identify your task. Do not change.
+slug: list_team_users
+
+# A human-readable name for your task.
+name: List Team Users
+
+# A human-readable description for your task.
+# description: "My Airplane task"
+
+# A list of inputs to your task.
+parameters:
+  - slug: account_id
+    name: Account ID
+    type: integer
+
+sql:
+  resource: "[Demo DB]"
+  entrypoint: list_team_users.sql
+  queryArgs:
+    account_id: "{{params.account_id}}"

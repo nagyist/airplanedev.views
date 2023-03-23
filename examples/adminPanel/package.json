@@ -1,0 +1,31 @@
+{
+  "name": "adminpanel",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "echo no tests",
+    "lint": "echo no lint",
+    "lint:fix": "echo no lint"
+  },
+  "dependencies": {
+    "react": "18.0.0",
+    "react-dom": "18.0.0",
+    "@airplane/views": "*"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "@vitejs/plugin-react": "3.1.0"
+  },
+  "airplane": {
+    "root": ".."
+  },
+  "workspaces": {
+    "nohoist": [
+      "@airplane/views"
+    ]
+  }
+}

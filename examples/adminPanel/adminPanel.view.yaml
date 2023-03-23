@@ -1,0 +1,4 @@
+slug: my_view
+name: Admin Panel
+description: Manage teams and users
+entrypoint: ./src/App.tsx
