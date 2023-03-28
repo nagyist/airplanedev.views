@@ -2,7 +2,7 @@ import { ComponentMeta, Story } from "@storybook/react";
 import { userEvent, within } from "@storybook/testing-library";
 import { useState } from "react";
 
-import { Card } from "components/card/Card";
+import { Stack } from "components/stack/Stack";
 import { Text } from "components/text/Text";
 import { MultiSelectState, useComponentState } from "state";
 import { MultiSelectTValue } from "state/components/multiselect/reducer";
@@ -17,9 +17,9 @@ export default {
 } as ComponentMeta<typeof MultiSelect>;
 
 const Template: Story<MultiSelectProps> = (args) => (
-  <Card height="96u">
+  <Stack height="96u">
     <MultiSelect {...args} />
-  </Card>
+  </Stack>
 );
 
 export const Default = Template.bind({});
