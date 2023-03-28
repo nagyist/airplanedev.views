@@ -3,7 +3,7 @@ import { userEvent, within } from "@storybook/testing-library";
 import { useState } from "react";
 
 import { Callout } from "components/callout/Callout";
-import { Stack } from "components/stack/Stack";
+import { Card } from "components/card/Card";
 import { Text } from "components/text/Text";
 import { SelectState, useComponentState } from "state";
 import { SelectTValue } from "state/components/select/reducer";
@@ -16,7 +16,11 @@ export default {
   component: Select,
 } as ComponentMeta<typeof Select>;
 
-const Template: Story<SelectProps> = (args) => <Select {...args} />;
+const Template: Story<SelectProps> = (args) => (
+  <Card height="96u">
+    <Select {...args} />
+  </Card>
+);
 
 export const Default = Template.bind({});
 Default.args = {
