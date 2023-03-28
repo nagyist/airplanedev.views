@@ -81,7 +81,10 @@ export const LinkButton_ = createStory(Button, {
 export const Callout_ = createStory(Callout, CalloutDefault.args!);
 export const Card_ = createStory(Card, { children: "Test" });
 // @ts-ignore: The Story args type are all marked as optional, but the component has some required props.
-export const Chart_ = createStory(Chart, ScatterLog.args!);
+export const Chart_ = createStory(Chart, {
+  ...ScatterLog.args!,
+  height: "96u",
+});
 // @ts-ignore
 export const Code_ = createStory(Code, JS.args);
 export const DatePicker_ = createStory(DatePicker, {});

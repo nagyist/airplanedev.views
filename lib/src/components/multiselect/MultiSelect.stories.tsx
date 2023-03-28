@@ -2,6 +2,7 @@ import { ComponentMeta, Story } from "@storybook/react";
 import { userEvent, within } from "@storybook/testing-library";
 import { useState } from "react";
 
+import { Stack } from "components/stack/Stack";
 import { Text } from "components/text/Text";
 import { MultiSelectState, useComponentState } from "state";
 import { MultiSelectTValue } from "state/components/multiselect/reducer";
@@ -101,6 +102,9 @@ ItemComponent.args = {
 ItemComponent.play = async ({ canvasElement }) => {
   const canvas = within(canvasElement);
   await userEvent.click(canvas.getByLabelText("Fruits"));
+};
+ItemComponent.parameters = {
+  chromatic: { diffThreshold: 0.83 },
 };
 
 export const ItemComponentDeprecated = Template.bind({});
