@@ -2,6 +2,7 @@ import { uniqueId } from "lodash-es";
 import hash from "object-hash";
 import { Component, ErrorInfo, ReactNode } from "react";
 
+import { getNPMPackageVersion } from "getNPMPackageVersion";
 import { sendViewMessage } from "message/sendViewMessage";
 
 import { ComponentErrorFallback } from "./ComponentErrorFallback";
@@ -9,7 +10,7 @@ import { LatestRun } from "./LatestRunDetails";
 
 export type Props = {
   children: ReactNode;
-  componentName?: string;
+  componentName: string;
   fallback?: ReactNode;
   latestRun?: LatestRun;
 };
@@ -21,6 +22,16 @@ export class ComponentErrorBoundary extends Component<
   constructor(props: Props) {
     super(props);
     this.state = {};
+  }
+
+  componentDidMount() {
+    const version = getNPMPackageVersion();
+
+    sendViewMessage({
+      type: "component_mounted",
+      componentName: this.props.componentName,
+      version,
+    });
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
