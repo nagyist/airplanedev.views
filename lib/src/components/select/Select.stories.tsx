@@ -14,13 +14,16 @@ import { SelectProps } from "./Select.types";
 export default {
   title: "Select",
   component: Select,
+  decorators: [
+    (Story) => (
+      <Stack height="96u">
+        <Story />
+      </Stack>
+    ),
+  ],
 } as ComponentMeta<typeof Select>;
 
-const Template: Story<SelectProps> = (args) => (
-  <Stack height="96u">
-    <Select {...args} />
-  </Stack>
-);
+const Template: Story<SelectProps> = (args) => <Select {...args} />;
 
 export const Default = Template.bind({});
 Default.args = {

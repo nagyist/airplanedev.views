@@ -14,13 +14,16 @@ import { Callout } from "../callout/Callout";
 export default {
   title: "MultiSelect",
   component: MultiSelect,
+  decorators: [
+    (Story) => (
+      <Stack height="96u">
+        <Story />
+      </Stack>
+    ),
+  ],
 } as ComponentMeta<typeof MultiSelect>;
 
-const Template: Story<MultiSelectProps> = (args) => (
-  <Stack height="96u">
-    <MultiSelect {...args} />
-  </Stack>
-);
+const Template: Story<MultiSelectProps> = (args) => <MultiSelect {...args} />;
 
 export const Default = Template.bind({});
 Default.args = {
