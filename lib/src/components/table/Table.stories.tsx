@@ -175,7 +175,9 @@ RowActions.args = {
   columns: SIMPLE_DATA_COLUMNS,
   rowActions: ["Delete", "Mark as churned using unnecessarily long button"],
   rowSelection: "single",
-  freezeRowActions: false,
+};
+RowActions.parameters = {
+  chromatic: { diffThreshold: 0.5 },
 };
 
 export const RowActionsMenu = TemplateFn<SimpleUser>().bind({});
@@ -215,6 +217,10 @@ RowActionsLinkButtons.args = {
   ],
   rowSelection: "single",
   freezeRowActions: false,
+};
+RowActionsLinkButtons.parameters = {
+  // Wait for permissions to load
+  chromatic: { delay: 300 },
 };
 
 export const CustomizedRowActions = TemplateFn<SimpleUser>().bind({});
