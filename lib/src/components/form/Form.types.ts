@@ -14,8 +14,12 @@ export type FieldOption = {
   /** The value assigned to the field. */
   value?: string | number | boolean | Date;
   /** The default value for the field. Ignored if `value` is set. */
-  defaultValue?: string | number | Date;
-  /** The set of allowed values for the field. Ignored if `value` is set. */
+  defaultValue?: string | number | boolean | Date;
+  /**
+   * The set of allowed values for the field. Ignored if `value` is set. This
+   * prop is only valid if there are at least two allowed values, so boolean
+   * arrays are not supported.
+   */
   allowedValues?: string[] | number[] | Date[];
   /** If true, the field will be disabled. */
   disabled?: boolean;
