@@ -1,4 +1,5 @@
 import { ComponentMeta, Story } from "@storybook/react";
+import { useEffect, useState } from "react";
 
 import { Button } from "components/button/Button";
 import { Stack } from "components/stack/Stack";
@@ -182,4 +183,27 @@ PieWithColors.args = {
     valuesA: [100, 200, 300],
   },
   colors: ["red", "green", "blue"],
+};
+
+export const Loading = () => {
+  const [l, setL] = useState(true);
+  useEffect(() => {
+    setTimeout(() => {
+      setL(false);
+    }, 5000);
+  }, []);
+  return (
+    <Chart
+      id="chart"
+      type="scatter"
+      width="96u"
+      height="72u"
+      data={[
+        { x: 0, square: 0 },
+        { x: 1, square: 1 },
+        { x: 2, square: 4 },
+      ]}
+      loading={l}
+    />
+  );
 };
