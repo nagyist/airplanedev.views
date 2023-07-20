@@ -7,10 +7,10 @@
   resolved "https://registry.yarnpkg.com/@adobe/css-tools/-/css-tools-4.2.0.tgz#e1a84fca468f4b337816fcb7f0964beb620ba855"
   integrity sha512-E09FiIft46CmH5Qnjb0wsW54/YQd69LsxeKUOWawmws1XWvyFGURnAChH0mlr7YPFR1ofwvUQfcL0J3lMxXqPA==
 
-"@airplane/lib@0.2.61":
-  version "0.2.61"
-  resolved "https://registry.yarnpkg.com/@airplane/lib/-/lib-0.2.61.tgz#ddaadfeacaa4948799be7d381e664f1d207f17d3"
-  integrity sha512-A483tslGiNFQP1OApqS/1iJHOoT/xckGsaFCE3557S9zu8znsyHDrUfY13uuliNRwsLdhcme4x3IvMVWi+W0LA==
+"@airplane/lib@0.2.66":
+  version "0.2.66"
+  resolved "https://registry.yarnpkg.com/@airplane/lib/-/lib-0.2.66.tgz#e49bbd1112303b2f3912ffabb5908fbbe95688a1"
+  integrity sha512-C4cdCF8HDzzVf2qBVY0lprcpFwGz41sP66+/4CG+v2ppdEomr+j/maV0iv61JqHPhuoad5mU2FwNaq7mSQqInw==
   dependencies:
     "@azure/abort-controller" "1.1.0"
     agentkeepalive "^4.3.0"
@@ -4927,12 +4927,12 @@ aggregate-error@^3.0.0:
     clean-stack "^2.0.0"
     indent-string "^4.0.0"
 
-airplane@0.2.61:
-  version "0.2.61"
-  resolved "https://registry.yarnpkg.com/airplane/-/airplane-0.2.61.tgz#edd9ef7a0d020fcccbd11c432aa4cf913bec0c76"
-  integrity sha512-K8/Cdj7iiBRs6Qi4ls0tRZyp/DPM2uE569G8NdIGuwfcHDmjDgRVtiAUOUctbcEznHoW25u/sGBvHSC/kDRdAA==
+airplane@0.2.66:
+  version "0.2.66"
+  resolved "https://registry.yarnpkg.com/airplane/-/airplane-0.2.66.tgz#72f00eb1f5c4b7ab5df20d2bb9d891c7c9bdde61"
+  integrity sha512-IhTTFDt8pU2tSBANT9y+ZlvG42PqCclmitLYLLZZqs7piqWB9619+4EBCThZ4ww1US2c6q+EETR+NRqbG3i2hQ==
   dependencies:
-    "@airplane/lib" "0.2.61"
+    "@airplane/lib" "0.2.66"
     "@anthropic-ai/sdk" "0.4.3"
     "@azure/abort-controller" "1.1.0"
     "@opentelemetry/api" "1.2.0"
