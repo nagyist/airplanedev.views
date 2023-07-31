@@ -21,7 +21,7 @@ import {
   UserGroup,
 } from "client/types";
 import { Avatar, getInitials } from "components/avatar/Avatar";
-import { Dialog } from "components/dialog/Dialog";
+import { DialogComponent } from "components/dialog/Dialog";
 import { UserGroupIcon } from "components/icon";
 import { Loader } from "components/loader/Loader";
 import { showNotification } from "components/notification/showNotification";
@@ -217,7 +217,7 @@ export function RequestRunnableDialog<
   }, 200);
 
   return (
-    <Dialog
+    <DialogComponent
       title={
         "Request execution of " +
         (runnableData?.task?.name ||
@@ -266,7 +266,7 @@ export function RequestRunnableDialog<
           </Stack>
         </Stack>
       </form>
-    </Dialog>
+    </DialogComponent>
   );
 }
 
