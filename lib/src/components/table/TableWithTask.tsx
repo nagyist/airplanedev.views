@@ -27,6 +27,7 @@ export const TableWithTask = <
   outputTransform,
   task,
   rowActions,
+  rowActionsMenu,
   setLatestRun,
   ...tableProps
 }: TableWithTaskProps<TRowData, TParams, TOutput> & SetLatestRunProps) => {
@@ -63,6 +64,27 @@ export const TableWithTask = <
     return fullMutation;
   });
 
+  let arrayRowMenuActions = rowActionsMenu
+    ? Array.isArray(rowActionsMenu)
+      ? rowActionsMenu
+      : [rowActionsMenu]
+    : [];
+  arrayRowMenuActions = arrayRowMenuActions.map((rowAction) => {
+    if (
+      typeof rowAction !== "string" &&
+      !("slug" in rowAction) &&
+      !("fn" in rowAction)
+    ) {
+      return rowAction;
+    }
+
+    const fullMutation = getFullMutation(rowAction);
+    if (!fullMutation.refetchTasks) {
+      fullMutation.refetchTasks = task;
+    }
+    return fullMutation;
+  });
+
   if (error) {
     return displayTaskBackedError({
       error,
@@ -83,6 +105,7 @@ export const TableWithTask = <
           loading && !!tableProps.isDefaultSelectedRow ? "loading" : undefined
         }
         rowActions={arrayRowActions}
+        rowActionsMenu={arrayRowMenuActions}
       />
     );
   }

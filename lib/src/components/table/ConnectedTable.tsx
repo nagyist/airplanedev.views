@@ -113,15 +113,18 @@ function getRowActions<TRowData extends object>(
 }
 
 function getRowActionsMenuWidth<TRowData extends object>(
-  rowActions: ConnectedTableProps<TRowData>["rowActions"],
+  rowActions: ConnectedTableProps<TRowData>["rowActionsMenu"],
   canvas: HTMLCanvasElement,
 ): number | undefined {
   if (rowActions === undefined) {
-    return 0;
+    return undefined;
   }
   const arrayRowActions = Array.isArray(rowActions) ? rowActions : [rowActions];
 
-  if (arrayRowActions.some((rowAction) => typeof rowAction === "function")) {
+  if (
+    arrayRowActions.some((rowAction) => typeof rowAction === "function") ||
+    arrayRowActions.length === 0
+  ) {
     return undefined;
   }
 
