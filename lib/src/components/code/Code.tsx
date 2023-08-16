@@ -56,7 +56,7 @@ export const CodeComponent = ({
       classNames={{
         lineNumber: classes.lineNumber,
         copy: classes.copy,
-        code: layoutClasses.style,
+        scrollArea: layoutClasses.style,
       }}
       getPrismTheme={(_theme, colorScheme) =>
         colorScheme === "light" ? github : dracula

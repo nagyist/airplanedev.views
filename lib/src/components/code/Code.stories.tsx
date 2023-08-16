@@ -63,3 +63,14 @@ if err != nil {
   withLineNumbers: true,
   theme: "dark",
 };
+
+export const Height = Template.bind({});
+Height.args = {
+  children: `commitObj, err := getCommit(ctx, repo, commitHash)
+if err != nil {
+  // Return an error
+  return nil, "nop", true, 8, err
+}`,
+  language: "go",
+  height: "20u",
+};
