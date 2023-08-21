@@ -51,7 +51,13 @@ AIRPLANE_TOKEN=<your Airplane token>
 AIRPLANE_ENV_SLUG=<environment against which you want to execute>
 ```
 
-Note that type changes won't be automatically reflected unless you run `airplane build` from the `lib/` directory.
+Your Airplane token can be found in `$HOME/.airplane/config`.
+
+You can also set a custom `AIRPLANE_API_HOST` in your `.env` file if you don't want to use the default Airplane API host.
+
+Note any tasks that you're using in your view since tasks are executed against the host and environment specified in your `.env` file, so make sure that the tasks are deployed.
+
+Note that while code changes are hot loaded, type changes won't be automatically reflected unless you run `airplane build` from the `lib/` directory.
 
 ### Run tests
 
