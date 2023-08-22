@@ -59,6 +59,7 @@
     "codemirror": "6.0.1",
     "currency-symbol-map": "5.1.0",
     "dayjs": "1.11.9",
+    "json5": "2.2.3",
     "lodash-es": "4.17.21",
     "object-hash": "3.0.0",
     "object-inspect": "1.12.3",

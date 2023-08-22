@@ -494,6 +494,15 @@ const mockData = [
                 optional: true,
               },
             },
+            {
+              slug: "json",
+              name: "JSON",
+              type: "json",
+              desc: "This is a JSON field",
+              constraints: {
+                optional: true,
+              },
+            },
           ],
         },
       },

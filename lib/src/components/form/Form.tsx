@@ -1,5 +1,6 @@
 import { HTTPError } from "@airplane/lib";
 import { useQuery } from "@tanstack/react-query";
+import json5 from "json5";
 import { useContext, useMemo, useState } from "react";
 
 import { DefaultOutput } from "client";
@@ -182,7 +183,7 @@ const FormWithRunnable = <TOutput,>({
     );
   }
 
-  const paramMetadata = Object.fromEntries(
+  const paramTypes = Object.fromEntries(
     params.map((v, i) => {
       return [v.slug, v.type];
     }),
@@ -216,13 +217,19 @@ const FormWithRunnable = <TOutput,>({
       Object.entries(formValues)
         // Get rid of extraneous entries
         .filter(([key, _]) => {
-          return key in paramMetadata;
+          return key in paramTypes;
         })
         // Extract the first element of file inputs
         .map(([key, val]) => {
-          if (paramMetadata[key] === "upload") {
+          if (paramTypes[key] === "upload") {
             const fileVal = val as File | File[];
             return [key, Array.isArray(fileVal) ? fileVal[0] : fileVal];
+          } else if (paramTypes[key] === "json") {
+            try {
+              return [key, json5.parse(val as string)];
+            } catch {
+              return [key, val];
+            }
           } else {
             return [key, val];
           }

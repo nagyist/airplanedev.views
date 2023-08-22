@@ -1,5 +1,6 @@
 import { Input } from "@mantine/core";
 import dayjs from "dayjs";
+import json5 from "json5";
 import { ReactElement } from "react";
 
 import { Parameter } from "client/types";
@@ -123,6 +124,21 @@ const PARAM_CONFIG_MAP: Record<Parameter["type"], ParamConfig> = {
       }
       if (constraints && !constraints.includes(val)) {
         return `${val} is not a valid value for ${slug}`;
+      }
+    },
+  },
+  json: {
+    getInput: (props) => {
+      return <CodeInput {...props} language="json" />;
+    },
+    validate: (val, slug) => {
+      if (typeof val !== "string") {
+        return `Value of param ${slug} must be a string`;
+      }
+      try {
+        json5.parse(val);
+      } catch {
+        return `Value of param ${slug} must be valid JSON`;
       }
     },
   },

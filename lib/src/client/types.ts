@@ -20,7 +20,8 @@ export type Parameter = {
     | "datetime"
     | "float"
     | "integer"
-    | "string";
+    | "string"
+    | "json";
   component?: "textarea" | "editor-sql";
   constraints: {
     optional: boolean;
