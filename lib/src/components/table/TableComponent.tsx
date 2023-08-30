@@ -292,7 +292,7 @@ export function TableComponent<TRowData extends object>({
               {rowActions?.map((RowActionComponent, i) => (
                 <RowActionComponent key={i} row={row.original} />
               ))}
-              {rowActionsMenu && (
+              {!!rowActionsMenu?.length && (
                 <RowActionsMenu
                   width={Math.max(
                     DEFAULT_ROW_MENU_WIDTH,
