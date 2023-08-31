@@ -484,3 +484,40 @@ ResizedColumn.play = async ({
 ResizedColumn.parameters = {
   chromatic: { delay: 1500 },
 };
+
+export const MaxWidthColumn = TemplateFn<User>().bind({});
+MaxWidthColumn.args = {
+  data: MANY_COLUMNS_DATA,
+  title: "Max width column",
+  columns: [
+    {
+      label: "User ID",
+      accessor: "userID",
+      wrap: true,
+      maxWidth: 100,
+    },
+    {
+      label: "Username",
+      accessor: "username",
+      maxWidth: 50,
+    },
+    {
+      label: "Email",
+      accessor: "email",
+    },
+    {
+      label: "Address",
+      accessor: "address",
+    },
+    {
+      label: "Password",
+      accessor: "password",
+      maxWidth: 50,
+    },
+    {
+      label: "Birthdate",
+      accessor: "birthdate",
+      type: "date",
+    },
+  ],
+};

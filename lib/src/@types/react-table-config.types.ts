@@ -73,4 +73,9 @@ export interface UseCustomCellProps<Value = any> {
    * the table resizes, the column width will not drop below this value.
    */
   minWidth?: number;
+  /**
+   * Sets the maximum width of the column. When the column width is adjusted, either manually or as
+   * the table resizes, the column width will not exceed this value.
+   */
+  maxWidth?: number;
 }
