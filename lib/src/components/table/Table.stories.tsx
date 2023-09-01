@@ -422,6 +422,7 @@ CustomElements.args = {
     },
   ],
   defaultPageSize: 10,
+  enableCSVDownload: true,
 };
 
 export const NullData = TemplateFn().bind({});
@@ -452,12 +453,26 @@ export const WithComponentError = () => {
   );
 };
 
-export const WithCSVDownloadButton = TemplateFn<SimpleUser>().bind({});
-WithCSVDownloadButton.args = {
-  data: SIMPLE_DATA,
+export const CSVDownload = TemplateFn<{
+  foo: { bar: string; baz: string };
+  string: string;
+  number: number;
+  boolean?: boolean;
+  null?: null;
+}>().bind({});
+CSVDownload.args = {
+  data: [
+    {
+      foo: { bar: "hello", baz: "world" },
+      string: "hello",
+      number: 1,
+      boolean: true,
+      null: null,
+    },
+    { foo: { bar: "goodbye", baz: "moon" }, string: "goodbye", number: 2 },
+  ],
   title: "Table with CSV download button",
-  columns: SIMPLE_DATA_COLUMNS,
-  defaultPageSize: 10,
+  columns: ["foo", "string", "number", "boolean", "null"],
   enableCSVDownload: true,
 };
 
