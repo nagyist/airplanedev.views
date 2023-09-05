@@ -455,6 +455,7 @@ export const WithComponentError = () => {
 
 export const CSVDownload = TemplateFn<{
   foo: { bar: string; baz: string };
+  cat: { name: string; breed: string };
   string: string;
   number: number;
   boolean?: boolean;
@@ -464,15 +465,28 @@ CSVDownload.args = {
   data: [
     {
       foo: { bar: "hello", baz: "world" },
+      cat: { name: "Graham Cracker", breed: "British Shorthair" },
       string: "hello",
       number: 1,
       boolean: true,
       null: null,
     },
-    { foo: { bar: "goodbye", baz: "moon" }, string: "goodbye", number: 2 },
+    {
+      foo: { bar: "goodbye", baz: "moon" },
+      cat: { name: "Baosky", breed: "Cool cat" },
+      string: "goodbye",
+      number: 2,
+    },
   ],
   title: "Table with CSV download button",
-  columns: ["foo", "string", "number", "boolean", "null"],
+  columns: [
+    "foo",
+    { accessor: "cat", valueToString: (v) => v.name },
+    "string",
+    "number",
+    "boolean",
+    "null",
+  ],
   enableCSVDownload: true,
 };
 

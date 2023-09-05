@@ -49,7 +49,6 @@ export interface UseCustomCellProps<Value = any> {
     value: Value;
     startEditing?: () => void;
   }>;
-
   /**
    * A custom component ot render in the cell during editing. Passed in as a callback function that
    * takes the initial cell value and returns the custom editable component. Once editing is complete,
@@ -63,6 +62,12 @@ export interface UseCustomCellProps<Value = any> {
     defaultValue: Value;
     finishEditing: (newValue: Value) => void;
   }>;
+  /**
+   * A function that converts the value of the cell to a string.
+   *
+   * This is used when exporting the table to CSV to allow for custom formatting of the cell value.
+   */
+  valueToString?: (value: Value) => string;
   /**
    * Sets the width of the column. This width is a recommendation, and actual column widths will
    * adjust to the width of the enclosing container proportionally.

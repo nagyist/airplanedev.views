@@ -471,9 +471,7 @@ export function TableComponent<TRowData extends object>({
     const rowToData = (row: Row<TRowData>) => {
       return visibleColumns.map((column) => row.values[column.id]);
     };
-    const cols = tableColumns.map((c) => String(c.label || c.id || ""));
-
-    return dataToCSVLink(cols, allRows.map(rowToData));
+    return dataToCSVLink(tableColumns, allRows.map(rowToData));
   }, [allRows, visibleColumns, enableCSVDownload, tableColumns]);
 
   // We shrink the list of header group offsetWidths here, just in case the number
