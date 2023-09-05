@@ -10,6 +10,8 @@ export let AIRPLANE_TUNNEL_TOKEN = import.meta.env?.AIRPLANE_TUNNEL_TOKEN ?? "";
 export let AIRPLANE_SANDBOX_TOKEN =
   import.meta.env?.AIRPLANE_SANDBOX_TOKEN ?? "";
 export let AIRPLANE_API_HEADERS = import.meta.env?.AIRPLANE_API_HEADERS ?? "{}";
+export let AIRPLANE_USE_SELF_HOSTED_INPUTS =
+  import.meta.env?.AIRPLANE_USE_SELF_HOSTED_INPUTS === "true";
 
 // Additional environment variables we want to plumb into the views package.
 type AdditionalEnvVars = {
@@ -22,6 +24,7 @@ type AdditionalEnvVars = {
   AIRPLANE_API_HEADERS?: string;
   // AIRPLANE_VIEW_TOKEN is used to identify the view to the API.
   AIRPLANE_VIEW_TOKEN?: string;
+  AIRPLANE_USE_SELF_HOSTED_INPUTS?: string;
 };
 
 export const setEnvVars = (
@@ -42,6 +45,8 @@ export const setEnvVars = (
   AIRPLANE_TUNNEL_TOKEN = additionalEnvVars?.AIRPLANE_TUNNEL_TOKEN ?? "";
   AIRPLANE_SANDBOX_TOKEN = additionalEnvVars?.AIRPLANE_SANDBOX_TOKEN ?? "";
   AIRPLANE_API_HEADERS = additionalEnvVars?.AIRPLANE_API_HEADERS ?? "{}";
+  AIRPLANE_USE_SELF_HOSTED_INPUTS =
+    additionalEnvVars?.AIRPLANE_USE_SELF_HOSTED_INPUTS === "true";
 };
 
 export const getExecuteOptions = (source: "query" | "mutation") => {

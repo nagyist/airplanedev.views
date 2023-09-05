@@ -5,6 +5,7 @@ interface ImportMetaEnv {
   readonly AIRPLANE_ENV_SLUG?: string;
   readonly AIRPLANE_TOKEN?: string;
   readonly AIRPLANE_API_KEY?: string;
+  readonly AIRPLANE_USE_SELF_HOSTED_INPUTS?: string;
 }
 
 interface ImportMeta {

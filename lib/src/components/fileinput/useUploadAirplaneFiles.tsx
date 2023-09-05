@@ -1,7 +1,12 @@
 import { AirplaneFile } from "airplane";
 import { useCallback, useState } from "react";
 
-import { UPLOADS_CREATE } from "client/endpoints";
+import {
+  PICK_ZONE,
+  UPLOADS_CREATE,
+  AGENT_UPLOADS_CREATE,
+} from "client/endpoints";
+import { AIRPLANE_USE_SELF_HOSTED_INPUTS } from "client/env";
 import { Fetcher } from "client/fetcher";
 
 /**
@@ -60,19 +65,67 @@ export const useUploadAirplaneFiles = ({
                 writeURL: writeOnlyURL,
               } = await getUploadURL(file.name, file.size));
             } else {
-              ({
-                upload: { id: uploadID },
-                readOnlyURL,
-                writeOnlyURL,
-              } = await fetcher.post<{
-                upload: { id: string };
-                readOnlyURL: string;
-                writeOnlyURL: string;
-              }>(UPLOADS_CREATE, {
-                fileName: file.name,
-                sizeBytes: file.size,
-              }));
+              const pickZoneResp = AIRPLANE_USE_SELF_HOSTED_INPUTS
+                ? await fetcher.get<{
+                    zone?: {
+                      id: string;
+                      dataPlaneURL: string;
+                      accessToken: string;
+                    };
+                  }>(PICK_ZONE)
+                : null;
+
+              if (pickZoneResp && pickZoneResp.zone?.dataPlaneURL) {
+                // Save the upload in the zone
+                const agentResp = await fetcher.post<{
+                  readOnlyURL: string;
+                  writeOnlyURL: string;
+                  upload: { zoneToken: string };
+                }>(
+                  AGENT_UPLOADS_CREATE,
+                  {
+                    fileName: file.name,
+                    sizeBytes: file.size,
+                  },
+                  {
+                    headers: {
+                      "X-Airplane-Dataplane-Token":
+                        pickZoneResp.zone?.accessToken,
+                    },
+                    host: pickZoneResp.zone?.dataPlaneURL,
+                  },
+                );
+
+                // Register the upload in the Airplane API
+                const uploadResp = await fetcher.post<{
+                  upload: { id: string };
+                }>(UPLOADS_CREATE, {
+                  fileName: file.name,
+                  sizeBytes: file.size,
+                  zoneID: pickZoneResp.zone.id,
+                  zoneToken: agentResp.upload.zoneToken,
+                });
+
+                uploadID = uploadResp.upload.id;
+                readOnlyURL = agentResp.readOnlyURL;
+                writeOnlyURL = agentResp.writeOnlyURL;
+              } else {
+                // Just save the upload in the Airplane API
+                ({
+                  upload: { id: uploadID },
+                  readOnlyURL,
+                  writeOnlyURL,
+                } = await fetcher.post<{
+                  upload: { id: string };
+                  readOnlyURL: string;
+                  writeOnlyURL: string;
+                }>(UPLOADS_CREATE, {
+                  fileName: file.name,
+                  sizeBytes: file.size,
+                }));
+              }
             }
+
             await new Promise<void>((resolve, reject) => {
               const xhr = new XMLHttpRequest();
               xhr.addEventListener("load", (e) => {
