@@ -190,9 +190,8 @@ describe("Table", () => {
     const expectedData =
       "data:text/csv;charset=utf-8," +
       encodeURIComponent(`"foo","foo2"\n"bar","bar2"\n"bar","abc""\ndef"`);
-    const downloadLink = await screen.findByTestId<HTMLAnchorElement>(
-      "csvDownload",
-    );
+    const downloadLink =
+      await screen.findByTestId<HTMLAnchorElement>("csvDownload");
     expect(downloadLink.href).toEqual(expectedData);
     expect(downloadLink.download).toEqual(expect.stringMatching(/\.csv$/));
   });
@@ -212,9 +211,8 @@ describe("Table", () => {
         enableCSVDownload="my-custom-name.csv"
       />,
     );
-    const downloadLink = await screen.findByTestId<HTMLAnchorElement>(
-      "csvDownload",
-    );
+    const downloadLink =
+      await screen.findByTestId<HTMLAnchorElement>("csvDownload");
     expect(downloadLink.download).toEqual("my-custom-name.csv");
   });
 
@@ -289,9 +287,8 @@ describe("Table", () => {
       );
       const editIcons = await screen.findAllByTestId("edit-icon");
       await userEvent.click(editIcons[0]);
-      const stringInput: HTMLInputElement = await screen.findByDisplayValue(
-        "My String",
-      );
+      const stringInput: HTMLInputElement =
+        await screen.findByDisplayValue("My String");
       await userEvent.type(stringInput, "2");
       expect(stringInput.value).toBe("My String2");
       await userEvent.type(stringInput, "{tab}");
@@ -311,9 +308,8 @@ describe("Table", () => {
       await screen.findByText(`{ "foo": "baz" }`);
 
       await userEvent.click(editIcons[3]);
-      const dateInput: HTMLInputElement = await screen.findByDisplayValue(
-        "Jul 06, 2022",
-      );
+      const dateInput: HTMLInputElement =
+        await screen.findByDisplayValue("Jul 06, 2022");
       await userEvent.click(await screen.findByText("7"));
       expect(dateInput.value).toBe("Jul 07, 2022");
       await userEvent.type(document.body, "{enter}");
@@ -376,9 +372,8 @@ describe("Table", () => {
         />,
       );
       await userEvent.click(await screen.findByTestId("edit-icon"));
-      const stringInput: HTMLInputElement = await screen.findByDisplayValue(
-        "My String",
-      );
+      const stringInput: HTMLInputElement =
+        await screen.findByDisplayValue("My String");
       await userEvent.type(stringInput, "2");
       expect(stringInput.value).toBe("My String2");
       await userEvent.type(stringInput, "{escape}");

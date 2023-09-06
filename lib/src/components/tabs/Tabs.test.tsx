@@ -42,12 +42,10 @@ describe("Tabs", () => {
     };
     render(<TestC />);
 
-    const galleryTab = await screen.findByTestId<HTMLButtonElement>(
-      "gallerytab",
-    );
-    const messagesTab = await screen.findByTestId<HTMLButtonElement>(
-      "messagestab",
-    );
+    const galleryTab =
+      await screen.findByTestId<HTMLButtonElement>("gallerytab");
+    const messagesTab =
+      await screen.findByTestId<HTMLButtonElement>("messagestab");
 
     expect(galleryTab).toHaveAttribute("aria-selected", "true");
     expect(messagesTab).toHaveAttribute("aria-selected", "false");
@@ -78,18 +76,15 @@ describe("Tabs", () => {
     };
     render(<TestC />);
 
-    const galleryTab = await screen.findByTestId<HTMLButtonElement>(
-      "gallerytab",
-    );
+    const galleryTab =
+      await screen.findByTestId<HTMLButtonElement>("gallerytab");
     expect(galleryTab).toHaveAttribute("aria-selected", "true");
 
     await userEvent.click(screen.getByText("Set null"));
-    const messagesTab = await screen.findByTestId<HTMLButtonElement>(
-      "messagestab",
-    );
-    const settingsTab = await screen.findByTestId<HTMLButtonElement>(
-      "settingstab",
-    );
+    const messagesTab =
+      await screen.findByTestId<HTMLButtonElement>("messagestab");
+    const settingsTab =
+      await screen.findByTestId<HTMLButtonElement>("settingstab");
     expect(galleryTab).toHaveAttribute("aria-selected", "false");
     expect(messagesTab).toHaveAttribute("aria-selected", "false");
     expect(settingsTab).toHaveAttribute("aria-selected", "false");
@@ -117,12 +112,10 @@ describe("Tabs", () => {
     };
     render(<TestC />);
 
-    const galleryTab = await screen.findByTestId<HTMLButtonElement>(
-      "gallerytab",
-    );
-    const messagesTab = await screen.findByTestId<HTMLButtonElement>(
-      "messagestab",
-    );
+    const galleryTab =
+      await screen.findByTestId<HTMLButtonElement>("gallerytab");
+    const messagesTab =
+      await screen.findByTestId<HTMLButtonElement>("messagestab");
 
     expect(galleryTab).toHaveAttribute("aria-selected", "true");
     expect(messagesTab).toHaveAttribute("aria-selected", "false");
@@ -137,9 +130,8 @@ describe("Tabs", () => {
 
     await screen.findByText("Value: messages");
 
-    const settingsTab = await screen.findByTestId<HTMLButtonElement>(
-      "settingstab",
-    );
+    const settingsTab =
+      await screen.findByTestId<HTMLButtonElement>("settingstab");
     expect(settingsTab).toHaveAttribute("aria-selected", "false");
     await userEvent.click(settingsTab);
 
@@ -162,9 +154,8 @@ describe("Tabs", () => {
       );
       render(<TestC />);
 
-      const galleryTab = await screen.findByTestId<HTMLButtonElement>(
-        "gallerytab",
-      );
+      const galleryTab =
+        await screen.findByTestId<HTMLButtonElement>("gallerytab");
       await userEvent.click(galleryTab);
       expect(window.location.hash).toBe("#tab=gallery");
     });
@@ -178,9 +169,8 @@ describe("Tabs", () => {
       );
       render(<TestC />);
 
-      const settingsTab = await screen.findByTestId<HTMLButtonElement>(
-        "settingstab",
-      );
+      const settingsTab =
+        await screen.findByTestId<HTMLButtonElement>("settingstab");
       expect(settingsTab).toHaveAttribute("aria-selected", "true");
     });
 
@@ -236,12 +226,10 @@ describe("Tabs", () => {
       };
       render(<TestC />);
 
-      const galleryTab = await screen.findByTestId<HTMLButtonElement>(
-        "gallerytab",
-      );
-      const messagesTab = await screen.findByTestId<HTMLButtonElement>(
-        "messagestab",
-      );
+      const galleryTab =
+        await screen.findByTestId<HTMLButtonElement>("gallerytab");
+      const messagesTab =
+        await screen.findByTestId<HTMLButtonElement>("messagestab");
 
       await userEvent.click(galleryTab);
       expect(galleryTab).toHaveAttribute("aria-selected", "true");
