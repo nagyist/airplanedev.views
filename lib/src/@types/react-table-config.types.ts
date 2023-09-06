@@ -50,7 +50,7 @@ export interface UseCustomCellProps<Value = any> {
     startEditing?: () => void;
   }>;
   /**
-   * A custom component ot render in the cell during editing. Passed in as a callback function that
+   * A custom component to render in the cell during editing. Passed in as a callback function that
    * takes the initial cell value and returns the custom editable component. Once editing is complete,
    * the custom component should call the `finishEditing` callback provided in the arguments, which
    * will exit editing mode for the given cell and render the regular non-editable component with
