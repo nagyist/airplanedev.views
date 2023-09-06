@@ -469,7 +469,9 @@ export function TableComponent<TRowData extends object>({
       return "";
     }
     const rowToData = (row: Row<TRowData>) => {
-      return visibleColumns.map((column) => row.values[column.id]);
+      return visibleColumns
+        .filter((column) => column.id !== ACTION_COLUMN_ID)
+        .map((column) => row.values[column.id]);
     };
     return dataToCSVLink(tableColumns, allRows.map(rowToData));
   }, [allRows, visibleColumns, enableCSVDownload, tableColumns]);

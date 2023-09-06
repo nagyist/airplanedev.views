@@ -490,6 +490,25 @@ CSVDownload.args = {
   enableCSVDownload: true,
 };
 
+export const CSVDownloadLoading = TemplateFn<SimpleUser>().bind({});
+CSVDownloadLoading.args = {
+  data: [],
+  columns: [
+    {
+      label: "User ID",
+      accessor: "userID",
+      valueToString: (v) => v,
+    },
+    {
+      label: "Username",
+      accessor: "username",
+    },
+  ],
+  loading: true,
+  rowActions: ["Test"],
+  enableCSVDownload: true,
+};
+
 export const ResizedColumn = TemplateFn<SimpleUser>().bind({});
 ResizedColumn.args = {
   data: SIMPLE_DATA,

@@ -40,7 +40,9 @@ function toCSVCell<TData>({
   valueToString?: (value: any) => string;
 }): string {
   const str =
-    valueToString != null ? valueToString(value) : defaultToString(value);
+    value != null && valueToString != null
+      ? valueToString(value)
+      : defaultToString(value);
   return escapeCSVString(str);
 }
 
