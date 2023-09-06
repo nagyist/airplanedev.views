@@ -25,9 +25,12 @@ export type Parameter = {
   component?: "textarea" | "editor-sql";
   constraints: {
     optional: boolean;
+    validate?: string;
     options?: { label: string; value: string }[];
+    regex?: string;
   };
   desc?: string;
+  hidden?: string;
 };
 
 export interface TaskOrRunbookReviewersResponse {

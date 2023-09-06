@@ -12,7 +12,7 @@ import {
 import { executeRunbook } from "client/executeRunbook";
 import { executeTask } from "client/executeTask";
 import { Fetcher } from "client/fetcher";
-import { TaskOrRunbookReviewersResponse } from "client/types";
+import { TaskOrRunbookReviewersResponse, Parameter } from "client/types";
 import { Button } from "components/button/Button";
 import { ComponentErrorBoundary } from "components/errorBoundary/ComponentErrorBoundary";
 import { useCommonLayoutStyle } from "components/layout/useCommonLayoutStyle";
@@ -39,7 +39,7 @@ import {
   State,
   TaskOptions,
 } from "./Form.types";
-import { parameterToInput, validateParameterOptions } from "./parameters";
+import { ParameterInput, validateParameterOptions } from "./parameters";
 
 export const Form = <TOutput = DefaultOutput,>({
   id: propId,
@@ -135,21 +135,54 @@ const FormWithRunnable = <TOutput,>({
     runnableData?.task?.parameters.parameters ||
     runnableData?.runbook?.parameters.parameters;
 
+  const { values: formValues } = useFormState(props.id);
+
+  const paramTypes = useMemo(
+    () =>
+      Object.fromEntries(
+        (params ?? []).map((v) => {
+          return [v.slug, v.type];
+        }),
+      ),
+    [params],
+  );
+
   const components = useMemo(() => {
     const visibleParams = params?.filter(
       (v) =>
         (!opts.shownFields || opts.shownFields.includes(v.slug)) &&
         (!opts.hiddenFields || !opts.hiddenFields.includes(v.slug)),
     );
+
+    const formValuesForRunnable = getParamValues(
+      formValues,
+      paramTypes,
+      opts.fieldOptions,
+      prefix,
+    );
+
     return visibleParams?.map((param, index) => {
-      return parameterToInput(
-        param,
-        index,
-        prefix,
-        opts.fieldOptions?.find((opt: FieldOption) => param.slug === opt.slug),
+      return (
+        <ParameterInput
+          key={index}
+          idPrefix={prefix}
+          param={param}
+          paramValues={formValuesForRunnable}
+          opt={opts.fieldOptions?.find(
+            (opt: FieldOption) => param.slug === opt.slug,
+          )}
+        />
       );
     });
-  }, [params, opts, prefix]);
+  }, [
+    params,
+    formValues,
+    opts.fieldOptions,
+    opts.shownFields,
+    opts.hiddenFields,
+    prefix,
+    paramTypes,
+  ]);
 
   if (runnableDataError) {
     return (
@@ -183,12 +216,6 @@ const FormWithRunnable = <TOutput,>({
     );
   }
 
-  const paramTypes = Object.fromEntries(
-    params.map((v, i) => {
-      return [v.slug, v.type];
-    }),
-  );
-
   const { canExecute, canRequest } = task
     ? processPermissionsQueryResult(
         permissionsStatus,
@@ -201,39 +228,20 @@ const FormWithRunnable = <TOutput,>({
         permissionsData!.resource["trigger_requests.create"],
       );
 
-  const newOnSubmit = (formValues: State) => {
-    // Make shallow copy of formValues
-    formValues = { ...formValues };
-
-    // Add back fixed value options
-    if (opts.fieldOptions) {
-      for (const option of opts.fieldOptions) {
-        if (option.value !== undefined) {
-          formValues[option.slug] = option.value;
-        }
+  const newOnSubmit = (values: State) => {
+    const valuesWithDefaults = { ...values };
+    // Add back fixed value options. This also happens in getFormValuesForRunnable, but we need to do it here
+    // as well so that the values are available in the onSubmit callback.
+    for (const option of opts.fieldOptions ?? []) {
+      if (option.value !== undefined) {
+        valuesWithDefaults[option.slug] = option.value;
       }
     }
-    const paramValues = Object.fromEntries(
-      Object.entries(formValues)
-        // Get rid of extraneous entries
-        .filter(([key, _]) => {
-          return key in paramTypes;
-        })
-        // Extract the first element of file inputs
-        .map(([key, val]) => {
-          if (paramTypes[key] === "upload") {
-            const fileVal = val as File | File[];
-            return [key, Array.isArray(fileVal) ? fileVal[0] : fileVal];
-          } else if (paramTypes[key] === "json") {
-            try {
-              return [key, json5.parse(val as string)];
-            } catch {
-              return [key, val];
-            }
-          } else {
-            return [key, val];
-          }
-        }),
+    const paramValues = getParamValues(
+      values,
+      paramTypes,
+      opts.fieldOptions,
+      prefix,
     );
 
     const executeRunnable = async () => {
@@ -289,16 +297,11 @@ const FormWithRunnable = <TOutput,>({
         opened: true,
       });
     }
-    onSubmit?.(formValues);
+    onSubmit?.(valuesWithDefaults);
   };
 
   const newBeforeSubmitTransform = (rawFormValues: State) => {
-    const maybeRemovePrefix = (k: string) =>
-      k.startsWith(prefix) ? k.substring(prefix.length) : k;
-
-    const valuesWithoutPrefix = Object.fromEntries(
-      Object.entries(rawFormValues).map(([k, v]) => [maybeRemovePrefix(k), v]),
-    );
+    const valuesWithoutPrefix = getValuesWithoutPrefix(rawFormValues, prefix);
 
     return beforeSubmitTransform
       ? beforeSubmitTransform(valuesWithoutPrefix)
@@ -428,3 +431,55 @@ function processPermissionsQueryResult(
   }
   return { canExecute, canRequest };
 }
+
+const getValuesWithoutPrefix = (values: State, prefix: string) => {
+  const maybeRemovePrefix = (k: string) =>
+    k.startsWith(prefix) ? k.substring(prefix.length) : k;
+
+  const valuesWithoutPrefix = Object.fromEntries(
+    Object.entries(values).map(([k, v]) => [maybeRemovePrefix(k), v]),
+  );
+
+  return valuesWithoutPrefix;
+};
+
+/** Gets param values that can be passed into a task execution from form state values. */
+const getParamValues = (
+  values: State,
+  paramTypes: Record<string, Parameter["type"]>,
+  fieldOptions: FieldOption[] | undefined,
+  prefix: string,
+) => {
+  // Make shallow copy of formValues
+  const formValues = getValuesWithoutPrefix(values, prefix);
+  // Add back fixed value options
+  for (const option of fieldOptions ?? []) {
+    if (option.value !== undefined) {
+      formValues[option.slug] = option.value;
+    }
+  }
+  const paramValues = Object.fromEntries(
+    Object.entries(formValues)
+      // Get rid of extraneous entries
+      .filter(([key, _]) => {
+        return key in paramTypes;
+      })
+      // Extract the first element of file inputs
+      .map(([key, val]) => {
+        if (paramTypes[key] === "upload") {
+          const fileVal = val as File | File[];
+          return [key, Array.isArray(fileVal) ? fileVal[0] : fileVal];
+        } else if (paramTypes[key] === "json") {
+          try {
+            return [key, json5.parse(val as string)];
+          } catch {
+            return [key, val];
+          }
+        } else {
+          return [key, val];
+        }
+      }),
+  );
+
+  return paramValues;
+};

@@ -19,7 +19,7 @@ export const runValidate = <TValue>(
     const validateFns = unpackValidateProp(validate);
     for (const validateFn of validateFns) {
       const error = validateFn(value);
-      if (error != null && error.length > 0) {
+      if (error) {
         errors.push(error);
       }
     }

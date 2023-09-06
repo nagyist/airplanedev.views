@@ -15,6 +15,7 @@ import { Textarea } from "components/textarea/Textarea";
 import { TextInput } from "components/textinput/TextInput";
 
 import { FieldOption, RunbookOptions, TaskOptions } from "./Form.types";
+import { useEvaluateTemplate } from "./jst";
 
 interface ParamConfig {
   getInput: (
@@ -22,7 +23,6 @@ interface ParamConfig {
       required: boolean;
       id: string;
       label: string;
-      key: number;
     },
     component?: string,
   ) => ReactElement;
@@ -144,28 +144,74 @@ const PARAM_CONFIG_MAP: Record<Parameter["type"], ParamConfig> = {
   },
 };
 
-export const parameterToInput = (
-  param: Parameter,
-  key: number,
-  idPrefix: string,
-  opt?: FieldOption,
-) => {
+type ParameterInputProps = {
+  param: Parameter;
+  paramValues: Record<string, unknown>;
+  idPrefix: string;
+  opt?: FieldOption;
+};
+
+/** PrameterInput represents the UI component for a single parameter. */
+export const ParameterInput = ({
+  param,
+  idPrefix,
+  opt,
+  paramValues,
+}: ParameterInputProps) => {
+  const hiddenEval = useEvaluateTemplate(
+    param.hidden,
+    { params: paramValues },
+    { forceEvaluate: true },
+  );
+  const validateEval = useEvaluateTemplate(
+    param.constraints.validate,
+    { params: paramValues },
+    { forceEvaluate: true },
+  );
+
+  // Hide the param if the hidden expression evaluates to true, or if we're still loading the
+  // initial value so we don't know yet.
+  const isHidden =
+    param.hidden && (hiddenEval.result || hiddenEval.initialLoading);
+  if (isHidden) {
+    return null;
+  }
   if (opt?.value !== undefined) {
     return (
-      <Input.Label key={key}>{`${param.slug}: ${JSON.stringify(
-        opt.value,
-      )}`}</Input.Label>
+      <Input.Label>{`${param.slug}: ${JSON.stringify(opt.value)}`}</Input.Label>
     );
   }
   const props = {
     required: !param.constraints.optional,
     id: idPrefix + param.slug,
     label: param.name,
-    key,
     ...(param.type === "boolean"
       ? { defaultChecked: opt?.defaultValue }
       : { defaultValue: opt?.defaultValue }),
-    validate: opt?.validate,
+    validate: (e: unknown): string | undefined => {
+      const optValidationResult = opt?.validate?.(e);
+      if (optValidationResult) {
+        return optValidationResult;
+      }
+      if (param.constraints.regex && typeof e === "string") {
+        const regex = new RegExp(param.constraints.regex);
+        if (!regex.test(e)) {
+          return `${param.name} does not match the following pattern: ${param.constraints.regex}`;
+        }
+      }
+      if (validateEval.result) {
+        return typeof validateEval.result === "string"
+          ? validateEval.result
+          : JSON.stringify(validateEval.result);
+      }
+      if (hiddenEval.error) {
+        return `Error evaluating hidden expression for ${param.name}: ${hiddenEval.error}`;
+      }
+      if (validateEval.error) {
+        return `Error evaluating validation expression for ${param.name}: ${validateEval.error}`;
+      }
+      return undefined;
+    },
     // This is not param?.desc because we don't want to pass an empty string desc
     description: param.desc || undefined,
     disabled: opt?.disabled,

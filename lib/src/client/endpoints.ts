@@ -15,4 +15,6 @@ export const UPLOADS_CREATE = "/v0/uploads/create";
 export const PICK_ZONE = "/v0/inputs/pickZone";
 export const RUNNER_SCALE_SIGNAL_CREATE = "/v0/runners/createScaleSignal";
 
+export const EVALUATE_TEMPLATE = "/i/templates/evaluate";
+
 export const AGENT_UPLOADS_CREATE = "/v0/dp/uploads/create";
