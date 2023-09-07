@@ -52,7 +52,7 @@
     "@mantine/hooks": "5.10.5",
     "@mantine/notifications": "5.10.5",
     "@mantine/prism": "5.10.5",
-    "@tanstack/react-query": "4.33.0",
+    "@tanstack/react-query": "4.35.0",
     "@types/object-inspect": "1.8.2",
     "@uiw/react-codemirror": "4.21.13",
     "airplane": "0.2.71",
