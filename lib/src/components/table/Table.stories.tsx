@@ -487,6 +487,8 @@ CSVDownload.args = {
     "boolean",
     "null",
   ],
+  rowActions: ["Test"],
+  rowSelection: "checkbox",
   enableCSVDownload: true,
 };
 
@@ -504,8 +506,8 @@ CSVDownloadLoading.args = {
       accessor: "username",
     },
   ],
-  loading: true,
   rowActions: ["Test"],
+  loading: true,
   enableCSVDownload: true,
 };
 

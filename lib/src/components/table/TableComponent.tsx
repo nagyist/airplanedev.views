@@ -40,7 +40,8 @@ import { Stack } from "components/stack/Stack";
 import { Tooltip } from "components/tooltip/Tooltip";
 
 import { Cell, dateTimeSort, getDefaultCellType } from "./Cell";
-import { dataToCSVLink } from "./csvUtils";
+import { CHECKBOX_ACTION_COLUMN_ID, ROW_ACTION_COLUMN_ID } from "./Column";
+import { dataToCSVLink } from "./dataToCSV";
 import Filter from "./Filter";
 import { Pagination } from "./Pagination";
 import { useStyles } from "./Table.styles";
@@ -51,7 +52,6 @@ import { useResizeColumns } from "./useResizeColumns";
 const LOADING_ROW_COUNT = 10;
 const LOADING_COL_COUNT = 4;
 const DEFAULT_ROW_MENU_WIDTH = 160;
-const ACTION_COLUMN_ID = "_action";
 
 export type TableComponentElement = {
   toggleAllRowsSelected: (select?: boolean) => void;
@@ -236,7 +236,7 @@ export function TableComponent<TRowData extends object>({
     if (rowSelection === "checkbox" && !loading) {
       hooks.visibleColumns.push((columns) => [
         {
-          id: "_selection",
+          id: CHECKBOX_ACTION_COLUMN_ID,
           width: "auto",
           disableResizing: true,
           Header: ({ getToggleAllRowsSelectedProps, onToggleAllRows, rows }) =>
@@ -281,7 +281,7 @@ export function TableComponent<TRowData extends object>({
     if (rowActions?.length || (rowActionsMenu?.length && !loading)) {
       const contentWidth = rowActionRef.current?.offsetWidth;
       const actionsColumn = {
-        id: ACTION_COLUMN_ID,
+        id: ROW_ACTION_COLUMN_ID,
         width: rowActionsWidth || contentWidth,
         sticky: freezeRowActions ? "right" : undefined,
         // Overwrite maxWidth for actions column with arbitrarily large value
@@ -468,13 +468,8 @@ export function TableComponent<TRowData extends object>({
     if (!enableCSVDownload) {
       return "";
     }
-    const rowToData = (row: Row<TRowData>) => {
-      return visibleColumns
-        .filter((column) => column.id !== ACTION_COLUMN_ID)
-        .map((column) => row.values[column.id]);
-    };
-    return dataToCSVLink(tableColumns, allRows.map(rowToData));
-  }, [allRows, visibleColumns, enableCSVDownload, tableColumns]);
+    return dataToCSVLink(visibleColumns, allRows);
+  }, [allRows, visibleColumns, enableCSVDownload]);
 
   // We shrink the list of header group offsetWidths here, just in case the number
   // of header groups reduces (e.g. if data changes and the number of inferred
@@ -562,7 +557,7 @@ export function TableComponent<TRowData extends object>({
                     )}
                     {column.canEdit && <EditIcon />}
                     {column.canResize &&
-                      nextColumn?.id !== ACTION_COLUMN_ID && (
+                      nextColumn?.id !== ROW_ACTION_COLUMN_ID && (
                         <div
                           {...column.getResizerProps()}
                           className={cx("resizer", {
@@ -778,7 +773,7 @@ const didColumnsChange = <TRowData extends object>(
  * This is a hack to override the flex grow set by useFlexLayout.
  */
 const fixActionCol = (props: TableHeaderProps | TableCellProps) => {
-  if (props.key.toString().endsWith(ACTION_COLUMN_ID) && props.style) {
+  if (props.key.toString().endsWith(ROW_ACTION_COLUMN_ID) && props.style) {
     // useFlexLayout sets the flex grow in proportion to its width.
     // This prevents the action column from growing.
     props.style.flex = "0 0 auto";
