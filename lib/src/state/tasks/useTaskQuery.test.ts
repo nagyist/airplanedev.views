@@ -30,11 +30,13 @@ describe("useTaskQuery", () => {
     );
 
     expect(result.current.loading).toBe(true);
+    expect(result.current.executing).toBe(true);
     expect(result.current.error).toBeFalsy();
     expect(result.current.output).toBeFalsy();
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
+      expect(result.current.executing).toBe(false);
       expect(result.current.output).toBe("value");
       expect(result.current.error).toBeFalsy();
       expect(result.current.runID).toBe("1");

@@ -73,9 +73,16 @@ export type UseTaskQueryResult<TOutput = DefaultOutput> = {
    */
   output?: TOutput;
   /**
-   * Will be true when the task is currently executing.
+   * True when the task is executing for the first time.
    */
   loading?: boolean;
+  /**
+   * True anytime the task is executing. This includes the first time the task is executed (loading = true)
+   * and anytime the task is refetching.
+   *
+   * You usually want to use `loading` instead of `executing` unless you want to show an indicator when the task is refetching.
+   */
+  executing?: boolean;
   /**
    * Will be set with the error message if the task failed to execute.
    */
@@ -121,47 +128,45 @@ export const useTaskQuery = <
   } = fullQuery;
   const slug = getSlug(fullQuery);
   const enabled = Boolean(enabledOption) && Boolean(slug);
-  const { isInitialLoading, isLoading, error, data, refetch } = useReactQuery<
-    ExecuteTaskSuccess<TOutput>,
-    ExecuteTaskError<TOutput>
-  >(
-    [slug, params],
-    async () => {
-      const runID = await executeTaskBackground<TParams, TOutput>(
-        slug,
-        "query",
-        params,
-      );
-      if (typeof runID === "object") {
-        throw runID;
-      }
-      setExecutedRunID(runID);
+  const { isInitialLoading, isLoading, error, data, refetch, isFetching } =
+    useReactQuery<ExecuteTaskSuccess<TOutput>, ExecuteTaskError<TOutput>>(
+      [slug, params],
+      async () => {
+        const runID = await executeTaskBackground<TParams, TOutput>(
+          slug,
+          "query",
+          params,
+        );
+        if (typeof runID === "object") {
+          throw runID;
+        }
+        setExecutedRunID(runID);
 
-      const r = await executeTask<TParams, TOutput>(
-        slug,
-        "query",
-        params,
-        runID,
-      );
-      if (isExecuteTaskError<TOutput>(r)) {
-        throw r;
-      }
-      return r;
-    },
-    {
-      enabled,
-      refetchInterval,
-      refetchOnMount: executeOnMount,
-      refetchOnWindowFocus: executeOnWindowFocus,
-      refetchOnReconnect: executeOnReconnect,
-      onSuccess: (res) => {
-        onSuccess?.(res.output, res.runID);
+        const r = await executeTask<TParams, TOutput>(
+          slug,
+          "query",
+          params,
+          runID,
+        );
+        if (isExecuteTaskError<TOutput>(r)) {
+          throw r;
+        }
+        return r;
       },
-      onError: (res) => {
-        onError?.(res.output, res.error, res.runID);
+      {
+        enabled,
+        refetchInterval,
+        refetchOnMount: executeOnMount,
+        refetchOnWindowFocus: executeOnWindowFocus,
+        refetchOnReconnect: executeOnReconnect,
+        onSuccess: (res) => {
+          onSuccess?.(res.output, res.runID);
+        },
+        onError: (res) => {
+          onError?.(res.output, res.error, res.runID);
+        },
       },
-    },
-  );
+    );
 
   return {
     output: data?.output ?? error?.output,
@@ -169,5 +174,6 @@ export const useTaskQuery = <
     error: error?.error,
     loading: enabled ? isLoading : Boolean(isInitialLoading),
     refetch,
+    executing: isFetching,
   };
 };
