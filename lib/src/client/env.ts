@@ -57,5 +57,6 @@ export const getExecuteOptions = (source: "query" | "mutation") => {
     envSlug: AIRPLANE_ENV_SLUG,
     source: `view-${source}`,
     headers: { "X-Airplane-View-Token": AIRPLANE_VIEW_TOKEN },
+    useSelfHostedInputs: AIRPLANE_USE_SELF_HOSTED_INPUTS,
   };
 };
