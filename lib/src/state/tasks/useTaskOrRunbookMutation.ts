@@ -1,5 +1,5 @@
 import { useMutation as useReactMutation } from "@tanstack/react-query";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 
 import { PERMISSIONS_GET } from "client/endpoints";
 import {
@@ -16,6 +16,7 @@ import {
   ExecuteTaskSuccess,
   ExecuteTaskError,
   isExecuteTaskError,
+  executeTaskBackground,
 } from "client/executeTask";
 import { Fetcher } from "client/fetcher";
 import { FullMutation, RunbookFullMutation, getSlug } from "components/query";
@@ -62,6 +63,7 @@ export const useTaskOrRunbookMutation = <
 >(
   mutation: TaskOrRunbookFullMutation<TParams, TOutput>,
 ): TaskOrRunbookMutationResult<TParams, TOutput> => {
+  const [executedRunID, setExecutedRunID] = useState<string | undefined>();
   const slug = getTaskOrRunbookSlug(mutation);
   const { params, refetchTasks: refetchQuery } = mutation.mutation;
 
@@ -93,10 +95,22 @@ export const useTaskOrRunbookMutation = <
     async (opts) => {
       switch (mutation.type) {
         case "TASK": {
+          setExecutedRunID(undefined);
+          const runID = await executeTaskBackground<TParams, TOutput>(
+            slug,
+            "mutation",
+            opts?.params ?? params,
+          );
+          if (typeof runID === "object") {
+            throw runID;
+          }
+          setExecutedRunID(runID);
+
           const r = await executeTask<TParams, TOutput>(
             slug,
             "mutation",
             opts?.params ?? params,
+            runID,
           );
           if (isExecuteTaskError<TOutput>(r)) {
             throw r;
@@ -210,7 +224,7 @@ export const useTaskOrRunbookMutation = <
         type: mutation.type,
         result: {
           output: taskData?.output ?? taskError?.output,
-          runID: taskData?.runID ?? taskError?.runID,
+          runID: executedRunID ?? taskData?.runID ?? taskError?.runID,
           loading: isLoading,
           mutate,
           error: taskError?.error,

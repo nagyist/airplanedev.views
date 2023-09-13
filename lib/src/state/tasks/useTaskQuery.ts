@@ -2,6 +2,7 @@ import {
   QueryObserverResult,
   useQuery as useReactQuery,
 } from "@tanstack/react-query";
+import { useState } from "react";
 
 import {
   DefaultOutput,
@@ -11,6 +12,7 @@ import {
   ExecuteTaskSuccess,
   ParamValues,
   isExecuteTaskError,
+  executeTaskBackground,
 } from "client/executeTask";
 import {
   ExecuteError,
@@ -105,6 +107,7 @@ export const useTaskQuery = <
 >(
   query: TaskQuery<TParams, TOutput>,
 ): UseTaskQueryResult<TOutput> => {
+  const [executedRunID, setExecutedRunID] = useState<string | undefined>();
   const fullQuery = getFullQuery<TParams>(query);
   const {
     params,
@@ -124,7 +127,22 @@ export const useTaskQuery = <
   >(
     [slug, params],
     async () => {
-      const r = await executeTask<TParams, TOutput>(slug, "query", params);
+      const runID = await executeTaskBackground<TParams, TOutput>(
+        slug,
+        "query",
+        params,
+      );
+      if (typeof runID === "object") {
+        throw runID;
+      }
+      setExecutedRunID(runID);
+
+      const r = await executeTask<TParams, TOutput>(
+        slug,
+        "query",
+        params,
+        runID,
+      );
       if (isExecuteTaskError<TOutput>(r)) {
         throw r;
       }
@@ -147,7 +165,7 @@ export const useTaskQuery = <
 
   return {
     output: data?.output ?? error?.output,
-    runID: data?.runID ?? error?.runID,
+    runID: executedRunID ?? data?.runID ?? error?.runID,
     error: error?.error,
     loading: enabled ? isLoading : Boolean(isInitialLoading),
     refetch,
