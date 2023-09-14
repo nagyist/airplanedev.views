@@ -10,6 +10,16 @@ export interface EntitiesResponse {
   results: UserGroup[];
 }
 
+export interface ConstraintOption {
+  label: string;
+  value: ParamValue;
+}
+
+export interface TaskOption {
+  slug: string;
+  params?: ParamValues;
+}
+
 export type Parameter = {
   slug: string;
   name: string;
@@ -23,10 +33,11 @@ export type Parameter = {
     | "string"
     | "json";
   component?: "textarea" | "editor-sql";
+  default?: ParamValue;
   constraints: {
     optional: boolean;
     validate?: string;
-    options?: { label: string; value: string }[];
+    options?: Array<ConstraintOption | ParamValue> | TaskOption;
     regex?: string;
   };
   desc?: string;
@@ -67,3 +78,88 @@ export type TaskMetadata = {
   isArchived?: boolean;
   isLocal?: boolean;
 };
+
+/**
+ * isConstraintOptions is a user-defined type guard for checking if a variable is a list of constraint options.
+ */
+export const isConstraintOptions = (
+  options: unknown,
+): options is ConstraintOption[] => {
+  if (!Array.isArray(options)) {
+    return false;
+  }
+  return options.every(isConstraintOption);
+};
+
+/**
+ * isConstraintOption is a user-defined type guard for checking if a variable is a constraint option.
+ */
+export const isConstraintOption = (o: unknown): o is ConstraintOption => {
+  if (o == null || typeof o !== "object") {
+    return false;
+  }
+
+  return "value" in o;
+};
+
+/**
+ * isTaskOption is a user-defined type guard for checking if a variable is a TaskOption.
+ */
+export const isTaskOption = (options: unknown): options is TaskOption => {
+  if (!options || Array.isArray(options)) {
+    return false;
+  }
+  return typeof options === "object" && "slug" in options;
+};
+
+// JSONValue type
+export type JSONValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JSONObject
+  | JSONArray;
+export interface JSONObject {
+  [key: string]: JSONValue;
+}
+export type JSONArray = Array<JSONValue>;
+
+export type SingleParamValue =
+  | string
+  | boolean
+  | number
+  | Template
+  | ConfigVar
+  | ParamList
+  | ParamMap
+  | JSONValue
+  | undefined
+  | null;
+
+export type MultiParamValue = ParamValue[];
+
+export type ParamValue = SingleParamValue | MultiParamValue;
+export type ParamValues = Record<string, ParamValue>;
+
+export type ParamList = Array<unknown>;
+
+export type ParamMap = Record<string, unknown>;
+
+/**
+ * ConfigVar is a basic representation of a config variable, used for parameters.
+ */
+export type ConfigVar = {
+  __airplaneType: "configvar";
+  name: string;
+};
+
+export type Template = {
+  __airplaneType: "template";
+  raw: string;
+};
+
+export const isTemplate = (v: unknown): v is Template =>
+  v != null &&
+  typeof v === "object" &&
+  (v as Template)["__airplaneType"] === "template";

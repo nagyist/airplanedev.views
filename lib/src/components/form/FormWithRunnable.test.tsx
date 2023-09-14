@@ -366,8 +366,9 @@ describe("Form", () => {
       jest.useRealTimers();
     });
 
-    testCases.forEach(({ inputName, asyncElementGetter, paramTest }) => {
-      it(`${inputName} param`, async () => {
+    test.each(testCases)(
+      "$inputName param",
+      async ({ paramTest, asyncElementGetter }) => {
         server.use(
           rest.get("http://api/v0/runbooks/get", (_, res, ctx) => {
             return res(
@@ -396,91 +397,91 @@ describe("Form", () => {
         expect(mockOnSubmit).toHaveBeenLastCalledWith(
           paramTest.expectedAfterUpdate,
         );
-      });
-    });
+      },
+    );
   });
 
   describe("validation", () => {
-    validationTestCases.forEach((v) => {
-      it(v.testName, async () => {
-        server.use(
-          rest.get("http://api/v0/tasks/getTaskReviewers", (_, res, ctx) => {
-            return res(
-              ctx.json({
-                task: {
-                  parameters: {
-                    parameters: [
-                      {
-                        slug: "short_text",
-                        name: "Short text",
-                        type: "string",
-                        constraints: {
-                          optional: true,
-                          options: [
-                            {
-                              label: "",
-                              value: "cat",
-                            },
-                            {
-                              label: "",
-                              value: "dog",
-                            },
-                            {
-                              label: "",
-                              value: "fish",
-                            },
-                          ],
-                        },
+    beforeEach(() => {
+      server.use(
+        rest.get("http://api/v0/tasks/getTaskReviewers", (_, res, ctx) => {
+          return res(
+            ctx.json({
+              task: {
+                parameters: {
+                  parameters: [
+                    {
+                      slug: "short_text",
+                      name: "Short text",
+                      type: "string",
+                      constraints: {
+                        optional: true,
+                        options: [
+                          {
+                            label: "",
+                            value: "cat",
+                          },
+                          {
+                            label: "",
+                            value: "dog",
+                          },
+                          {
+                            label: "",
+                            value: "fish",
+                          },
+                        ],
                       },
-                      {
-                        slug: "long_text",
-                        name: "Long text",
-                        type: "string",
-                        component: "textarea",
-                        constraints: {
-                          optional: false,
-                        },
+                    },
+                    {
+                      slug: "long_text",
+                      name: "Long text",
+                      type: "string",
+                      component: "textarea",
+                      constraints: {
+                        optional: false,
                       },
-                      {
-                        slug: "boolean",
-                        name: "Boolean",
-                        type: "boolean",
-                        constraints: {
-                          optional: true,
-                        },
+                    },
+                    {
+                      slug: "boolean",
+                      name: "Boolean",
+                      type: "boolean",
+                      constraints: {
+                        optional: true,
                       },
-                      {
-                        slug: "date",
-                        name: "Date",
-                        type: "date",
-                        constraints: {
-                          optional: true,
-                          options: [
-                            {
-                              label: "",
-                              value: "2022-11-03",
-                            },
-                            {
-                              label: "",
-                              value: "2022-11-02",
-                            },
-                            {
-                              label: "",
-                              value: "2022-11-01",
-                            },
-                          ],
-                        },
+                    },
+                    {
+                      slug: "date",
+                      name: "Date",
+                      type: "date",
+                      constraints: {
+                        optional: true,
+                        options: [
+                          {
+                            label: "",
+                            value: "2022-11-03",
+                          },
+                          {
+                            label: "",
+                            value: "2022-11-02",
+                          },
+                          {
+                            label: "",
+                            value: "2022-11-01",
+                          },
+                        ],
                       },
-                    ],
-                  },
+                    },
+                  ],
                 },
-              }),
-            );
-          }),
-        );
-        const { findByText } = render(<v.TestC />);
-        await findByText(v.expectedError);
-      });
+              },
+            }),
+          );
+        }),
+      );
+    });
+    test.each(validationTestCases)("$testName", async (v) => {
+      const { findByText } = render(<v.TestC />);
+      await findByText(v.expectedError);
     });
   });
 
@@ -1147,6 +1148,361 @@ describe("Form", () => {
       const { findByRole } = render(<TestC />);
       const input = await findByRole("textbox");
       expect(input).toBeDisabled();
+    });
+  });
+
+  it("with regex validation", async () => {
+    server.use(
+      rest.get("http://api/v0/tasks/getTaskReviewers", (_, res, ctx) => {
+        return res(
+          ctx.json({
+            task: {
+              parameters: {
+                parameters: [
+                  {
+                    slug: "long_text",
+                    name: "Long text",
+                    type: "string",
+                    component: "textarea",
+                    constraints: {
+                      optional: false,
+                      regex: "^[a-z]+$",
+                    },
+                  },
+                ],
+              },
+            },
+          }),
+        );
+      }),
+    );
+    const TestC = () => {
+      return (
+        <Form
+          task={{
+            slug: "params_test",
+            fieldOptions: [
+              {
+                slug: "long_text",
+                defaultValue: "45",
+              },
+            ],
+          }}
+        />
+      );
+    };
+    const { findByText, getByRole } = render(<TestC />);
+    await findByText("45");
+    await userEvent.click(getByRole("button", { name: "Submit" }));
+    await findByText(
+      "Long text does not match the following pattern: ^[a-z]+$",
+    );
+  });
+
+  it("with templated param validation function", async () => {
+    server.use(
+      rest.get("http://api/v0/tasks/getTaskReviewers", (_, res, ctx) => {
+        return res(
+          ctx.json({
+            task: {
+              parameters: {
+                parameters: [
+                  {
+                    slug: "long_text",
+                    name: "Long text",
+                    type: "string",
+                    component: "textarea",
+                    constraints: {
+                      optional: false,
+                      validate: "true",
+                    },
+                  },
+                ],
+              },
+            },
+          }),
+        );
+      }),
+      rest.post("http://api/i/templates/evaluate", async (req, res, ctx) => {
+        const body = await req.json();
+        if (
+          body.value === "{{true}}" &&
+          body.lookupMaps.params.long_text === "45"
+        ) {
+          return res(
+            ctx.json({
+              value: "Some error",
+            }),
+          );
+        } else {
+          return res(
+            ctx.json({
+              value: null,
+            }),
+          );
+        }
+      }),
+    );
+    const TestC = () => {
+      return (
+        <Form
+          task={{
+            slug: "params_test",
+            fieldOptions: [
+              {
+                slug: "long_text",
+                defaultValue: "45",
+              },
+            ],
+          }}
+        />
+      );
+    };
+    const { findByText, getByRole } = render(<TestC />);
+    await findByText("45");
+    // Give the form state time to load in.
+    await new Promise((r) => setTimeout(r, 200));
+    await userEvent.click(getByRole("button", { name: "Submit" }));
+    await findByText("Some error");
+  });
+
+  it("with templated param validation function that returns an error", async () => {
+    server.use(
+      rest.get("http://api/v0/tasks/getTaskReviewers", (_, res, ctx) => {
+        return res(
+          ctx.json({
+            task: {
+              parameters: {
+                parameters: [
+                  {
+                    slug: "long_text",
+                    name: "Long text",
+                    type: "string",
+                    component: "textarea",
+                    constraints: {
+                      optional: false,
+                      validate: "true",
+                    },
+                  },
+                ],
+              },
+            },
+          }),
+        );
+      }),
+      rest.post("http://api/i/templates/evaluate", async (_, res, ctx) => {
+        // Return an error.
+        return res(ctx.status(403, "Some error"));
+      }),
+    );
+    const TestC = () => {
+      return (
+        <Form
+          task={{
+            slug: "params_test",
+            fieldOptions: [
+              {
+                slug: "long_text",
+                defaultValue: "45",
+              },
+            ],
+          }}
+        />
+      );
+    };
+    const { findByText, getByRole } = render(<TestC />);
+    await findByText("45");
+    // Give the form state time to load in.
+    await new Promise((r) => setTimeout(r, 200));
+    await userEvent.click(getByRole("button", { name: "Submit" }));
+    await findByText(
+      "Error evaluating validation expression for Long text: Request failed: 403: Some error",
+    );
+  });
+
+  it("with templated hidden", async () => {
+    server.use(
+      rest.get("http://api/v0/tasks/getTaskReviewers", (_, res, ctx) => {
+        return res(
+          ctx.json({
+            task: {
+              parameters: {
+                parameters: [
+                  {
+                    slug: "long_text",
+                    name: "Long text",
+                    type: "string",
+                    component: "textarea",
+                    constraints: {
+                      optional: false,
+                    },
+                  },
+                  {
+                    slug: "hidden",
+                    name: "Hidden",
+                    type: "string",
+                    component: "textarea",
+                    constraints: {
+                      optional: false,
+                    },
+                    hidden: "true",
+                  },
+                ],
+              },
+            },
+          }),
+        );
+      }),
+      rest.post("http://api/i/templates/evaluate", async (req, res, ctx) => {
+        const body = await req.json();
+        if (
+          body.value === "{{true}}" &&
+          body.lookupMaps.params.long_text === "45"
+        ) {
+          return res(
+            ctx.json({
+              value: true,
+            }),
+          );
+        } else {
+          return res(
+            ctx.json({
+              value: null,
+            }),
+          );
+        }
+      }),
+    );
+
+    const mockOnSubmit = jest.fn();
+    const TestC = () => {
+      return (
+        <Form
+          task={{
+            slug: "params_test",
+            fieldOptions: [
+              {
+                slug: "long_text",
+                defaultValue: "45",
+              },
+              {
+                slug: "hidden",
+                defaultValue: "45",
+              },
+            ],
+          }}
+          onSubmit={mockOnSubmit}
+        />
+      );
+    };
+    const { queryByText, findByText } = render(<TestC />);
+    await findByText("Long text");
+    await waitFor(() => {
+      const param = queryByText("Hidden");
+      expect(param).toBeFalsy();
+    });
+    const submitButton = await findByText("Submit");
+    await userEvent.click(submitButton);
+    // We're able to submit the task and the hidden value is not included.
+    expect(mockOnSubmit).toHaveBeenLastCalledWith({
+      long_text: "45",
+    });
+  });
+
+  describe("task backed params", () => {
+    beforeEach(() => {
+      server.use(
+        rest.get("http://api/v0/tasks/getTaskReviewers", (_, res, ctx) => {
+          return res(
+            ctx.json({
+              task: {
+                parameters: {
+                  parameters: [
+                    {
+                      slug: "long_text",
+                      name: "Long text",
+                      type: "string",
+                      component: "textarea",
+                      constraints: {
+                        optional: false,
+                      },
+                    },
+                    {
+                      slug: "task_backed",
+                      name: "Task backed",
+                      type: "string",
+                      constraints: {
+                        optional: false,
+                        options: {
+                          slug: "list_of_things",
+                          params: {
+                            param: {
+                              __airplaneType: "template",
+                              raw: "{{true}}",
+                            },
+                          },
+                        },
+                      },
+                    },
+                  ],
+                },
+              },
+            }),
+          );
+        }),
+        rest.post("http://api/i/templates/evaluate", async (req, res, ctx) => {
+          const body = await req.json();
+          if (body.value === "{{true}}") {
+            return res(
+              ctx.json({
+                value: true,
+              }),
+            );
+          } else {
+            return res(
+              ctx.json({
+                value: null,
+              }),
+            );
+          }
+        }),
+      );
+    });
+
+    it("with default value set in opts", async () => {
+      executeTaskSuccess({
+        output: ["Thing1", "Thing2"],
+      });
+      const mockOnSubmit = jest.fn();
+      const TestC = () => {
+        return (
+          <Form
+            task={{
+              slug: "params_test",
+              fieldOptions: [
+                {
+                  slug: "long_text",
+                  defaultValue: "45",
+                },
+                {
+                  slug: "task_backed",
+                  defaultValue: "Thing1",
+                },
+              ],
+            }}
+            onSubmit={mockOnSubmit}
+          />
+        );
+      };
+      const { findByText, findByDisplayValue } = render(<TestC />);
+      await findByText("Long text");
+      await findByDisplayValue("Thing1");
+      const submitButton = await findByText("Submit");
+      await userEvent.click(submitButton);
+      expect(mockOnSubmit).toHaveBeenLastCalledWith({
+        long_text: "45",
+        task_backed: "Thing1",
+      });
     });
   });
 });

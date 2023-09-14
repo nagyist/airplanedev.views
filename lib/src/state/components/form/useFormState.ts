@@ -2,6 +2,7 @@ import { useCallback, useMemo } from "react";
 
 import { ComponentType, useSyncComponentState } from "state/context/context";
 
+import { InputValues } from "./state";
 import { adaptInputsToValues, useFormInputs } from "./useFormInputs";
 
 /**
@@ -24,14 +25,30 @@ export const useFormState = (id: string) => {
     return adaptInputsToValues(inputData);
   }, [inputData]);
 
+  const setValues = useCallback(
+    (values: InputValues) => {
+      Object.entries(values).forEach(([id, value]) => {
+        const inputState = inputData[id]?.state;
+        if (inputState) {
+          inputState.setValue(value as never);
+        }
+      });
+    },
+    [inputData],
+  );
+
   const state = useMemo(
     () => ({
       id,
+      /** The values of the form inputs as a map of input id => value. */
       values,
+      /** Sets the values of the form inputs from a map of input id => value. */
+      setValues,
+      /** Resets each of the form inputs. */
       reset,
       componentType: ComponentType.Form,
     }),
-    [id, values, reset],
+    [id, values, reset, setValues],
   );
   useSyncComponentState(id, state);
 

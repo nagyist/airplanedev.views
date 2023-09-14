@@ -15,11 +15,11 @@ export const executeTaskSuccess = (opts?: {
     rest.post("http://api/v0/runners/createScaleSignal", (req, res, ctx) => {
       return res(ctx.json({}));
     }),
-    rest.post("http://api/v0/tasks/execute", (req, res, ctx) => {
-      const b = req.body as {
+    rest.post("http://api/v0/tasks/execute", async (req, res, ctx) => {
+      const b = await req.json<{
         slug: string;
         paramValues?: Record<string, unknown>;
-      };
+      }>();
       expect(b.slug).toBeTruthy();
       if (opts?.expectedParamValues) {
         expect(b.paramValues).toEqual(opts.expectedParamValues);
@@ -39,11 +39,11 @@ export const executeRunbookSuccess = (opts?: {
   expectedParamValues?: Record<string, unknown>;
 }) => {
   server.use(
-    rest.post("http://api/v0/runbooks/execute", (req, res, ctx) => {
-      const b = req.body as {
+    rest.post("http://api/v0/runbooks/execute", async (req, res, ctx) => {
+      const b = await req.json<{
         slug: string;
         paramValues?: Record<string, unknown>;
-      };
+      }>();
       expect(b.slug).toBeTruthy();
       if (opts?.expectedParamValues) {
         expect(b.paramValues).toEqual(opts.expectedParamValues);
@@ -61,8 +61,12 @@ export const executeTaskFail = () => {
     rest.post("http://api/v0/runners/createScaleSignal", (req, res, ctx) => {
       return res(ctx.json({}));
     }),
-    rest.post("http://api/v0/tasks/execute", (req, res, ctx) => {
-      expect((req.body as { slug: string }).slug).toBeTruthy();
+    rest.post("http://api/v0/tasks/execute", async (req, res, ctx) => {
+      const b = await req.json<{
+        slug: string;
+        paramValues?: Record<string, unknown>;
+      }>();
+      expect(b.slug).toBeTruthy();
       return res(ctx.json({ runID: "1" }));
     }),
     rest.get("http://api/v0/runs/get", (_, res, ctx) => {
@@ -76,8 +80,12 @@ export const executeTaskFail = () => {
 
 export const executeRunbookFail = () => {
   server.use(
-    rest.post("http://api/v0/runbooks/execute", (req, res, ctx) => {
-      expect((req.body as { slug: string }).slug).toBeTruthy();
+    rest.post("http://api/v0/runbooks/execute", async (req, res, ctx) => {
+      const b = await req.json<{
+        slug: string;
+        paramValues?: Record<string, unknown>;
+      }>();
+      expect(b.slug).toBeTruthy();
       return res(ctx.json({ sessionID: "1" }));
     }),
     rest.get("http://api/v0/sessions/get", (_, res, ctx) => {

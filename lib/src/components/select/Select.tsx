@@ -217,7 +217,7 @@ export const SelectComponentWithoutRef = ({
 /**
  * outputToData converts task output to Select data.
  */
-function outputToData<TParams extends ParamValues | undefined, TOutput>(
+export function outputToData<TParams extends ParamValues | undefined, TOutput>(
   output: TOutput,
   dataTransform?: SelectPropsWithTask<TParams, TOutput>["outputTransform"],
 ): SelectComponentProps["data"] {

@@ -135,7 +135,9 @@ const FormWithRunnable = <TOutput,>({
     runnableData?.task?.parameters.parameters ||
     runnableData?.runbook?.parameters.parameters;
 
-  const { values: formValues } = useFormState(props.id);
+  const { values: formValues, setValues: setFormValues } = useFormState(
+    props.id,
+  );
 
   const paramTypes = useMemo(
     () =>
@@ -162,12 +164,17 @@ const FormWithRunnable = <TOutput,>({
     );
 
     return visibleParams?.map((param, index) => {
+      const inputID = `${prefix}${param.slug}`;
       return (
         <ParameterInput
           key={index}
           idPrefix={prefix}
           param={param}
           paramValues={formValuesForRunnable}
+          onChange={(value) => {
+            setFormValues({ ...formValues, [inputID]: value });
+          }}
+          value={formValues[inputID]}
           opt={opts.fieldOptions?.find(
             (opt: FieldOption) => param.slug === opt.slug,
           )}
@@ -177,6 +184,7 @@ const FormWithRunnable = <TOutput,>({
   }, [
     params,
     formValues,
+    setFormValues,
     opts.fieldOptions,
     opts.shownFields,
     opts.hiddenFields,

@@ -1,21 +1,31 @@
 import { Input } from "@mantine/core";
 import dayjs from "dayjs";
 import json5 from "json5";
-import { ReactElement } from "react";
+import { ReactElement, useEffect, useRef, useState } from "react";
+import { useDebouncedCallback } from "use-debounce";
 
-import { Parameter } from "client/types";
+import {
+  ConstraintOption,
+  ParamValue,
+  ParamValues,
+  Parameter,
+  isConstraintOptions,
+  isTaskOption,
+  isTemplate,
+} from "client/types";
 import { Checkbox } from "components/checkbox/Checkbox";
 import { CodeInput } from "components/codeinput/CodeInput";
 import { DatePicker } from "components/datepicker/DatePicker";
 import { DateTimePicker } from "components/datepicker/DateTimePicker";
 import { FileInput } from "components/fileinput/FileInput";
 import { NumberInput } from "components/number/NumberInput";
-import { Select } from "components/select/Select";
+import { Select, outputToData } from "components/select/Select";
 import { Textarea } from "components/textarea/Textarea";
 import { TextInput } from "components/textinput/TextInput";
+import { useTaskQuery } from "state";
 
 import { FieldOption, RunbookOptions, TaskOptions } from "./Form.types";
-import { useEvaluateTemplate } from "./jst";
+import { useEvaluateTemplate, useEvaluateTemplates } from "./jst";
 
 interface ParamConfig {
   getInput: (
@@ -30,7 +40,7 @@ interface ParamConfig {
   validate: (
     val: string | boolean | Date | number,
     slug: string,
-    constraints?: string[],
+    constraints?: ParamValue[],
   ) => string | undefined;
 }
 
@@ -57,7 +67,9 @@ const PARAM_CONFIG_MAP: Record<Parameter["type"], ParamConfig> = {
         (typeof val === "string" && !dayjs(val).isValid()) ||
         (constraints &&
           constraints.find(
-            (v) => new Date(v).getTime() === new Date(val).getTime(),
+            (v) =>
+              typeof v === "string" &&
+              new Date(v).getTime() === new Date(val).getTime(),
           ) === undefined)
       ) {
         return `${val} is not a valid value for ${slug}`;
@@ -72,7 +84,9 @@ const PARAM_CONFIG_MAP: Record<Parameter["type"], ParamConfig> = {
         (typeof val === "string" && !dayjs(val).isValid()) ||
         (constraints &&
           constraints.find(
-            (v) => new Date(v).getTime() === new Date(val).getTime(),
+            (v) =>
+              typeof v === "string" &&
+              new Date(v).getTime() === new Date(val).getTime(),
           ) === undefined)
       ) {
         return `${val} is not a valid value for ${slug}`;
@@ -146,33 +160,72 @@ const PARAM_CONFIG_MAP: Record<Parameter["type"], ParamConfig> = {
 
 type ParameterInputProps = {
   param: Parameter;
-  paramValues: Record<string, unknown>;
+  paramValues: ParamValues;
   idPrefix: string;
+  /** A callback that is called to change the value of the parameter. */
+  onChange: (value: unknown) => void;
+  /** The current value of the parameter. */
+  value?: unknown;
   opt?: FieldOption;
 };
 
-/** PrameterInput represents the UI component for a single parameter. */
+/** ParameterInput represents the UI component for a single parameter. */
 export const ParameterInput = ({
   param,
   idPrefix,
   opt,
   paramValues,
+  onChange,
+  value,
 }: ParameterInputProps) => {
+  const defaultValue = opt?.defaultValue ?? param.default;
   const hiddenEval = useEvaluateTemplate(
     param.hidden,
     { params: paramValues },
     { forceEvaluate: true },
   );
+  const isHidden =
+    param.hidden && (hiddenEval.result || hiddenEval.initialLoading);
+
   const validateEval = useEvaluateTemplate(
     param.constraints.validate,
     { params: paramValues },
     { forceEvaluate: true },
   );
 
+  const taskBackedConstraintOptionsLoaded = useRef(false);
+  const {
+    constraintOptions: taskBackedConstraintOptions,
+    error: taskBackedConstraintError,
+    isLoading: taskBackedConstraintLoading,
+  } = useTaskBackedConstraintOptions({
+    param,
+    paramValues: paramValues ?? {},
+    enabled: !isHidden,
+  });
+
+  if (
+    value &&
+    isTaskOption(param.constraints.options) &&
+    taskBackedConstraintOptionsLoaded.current &&
+    !taskBackedConstraintOptions?.some((o) => o.value === value)
+  ) {
+    // If the value is not in the list of task-backed constraint options, then it is invalid.
+    onChange(undefined);
+  }
+  if (
+    taskBackedConstraintOptions &&
+    !taskBackedConstraintOptionsLoaded.current
+  ) {
+    // After the task backed constraints load a single time, reset the default value.
+    if (opt?.value ?? defaultValue) {
+      onChange(canonicalizeValue(opt?.value ?? defaultValue, param.type));
+    }
+    taskBackedConstraintOptionsLoaded.current = true;
+  }
+
   // Hide the param if the hidden expression evaluates to true, or if we're still loading the
   // initial value so we don't know yet.
-  const isHidden =
-    param.hidden && (hiddenEval.result || hiddenEval.initialLoading);
   if (isHidden) {
     return null;
   }
@@ -186,8 +239,8 @@ export const ParameterInput = ({
     id: idPrefix + param.slug,
     label: param.name,
     ...(param.type === "boolean"
-      ? { defaultChecked: opt?.defaultValue }
-      : { defaultValue: opt?.defaultValue }),
+      ? { defaultChecked: defaultValue == null ? undefined : !!defaultValue }
+      : { defaultValue: defaultValue == null ? undefined : defaultValue }),
     validate: (e: unknown): string | undefined => {
       const optValidationResult = opt?.validate?.(e);
       if (optValidationResult) {
@@ -216,42 +269,44 @@ export const ParameterInput = ({
     description: param.desc || undefined,
     disabled: opt?.disabled,
   };
+
+  let constraintOptions: ConstraintOption[] | undefined = undefined;
+  if (param.constraints?.options) {
+    if (isConstraintOptions(param.constraints.options)) {
+      constraintOptions = param.constraints.options;
+    } else if (taskBackedConstraintOptions) {
+      constraintOptions = taskBackedConstraintOptions;
+    }
+  }
+
+  let options:
+    | Array<string | number | { value: string | number; label: string }>
+    | undefined = undefined;
   if (opt?.allowedValues) {
-    let allowedValues = canonicalizeValues(opt.allowedValues, param.type);
-    if (param.constraints.options) {
-      allowedValues = filterValues(
-        allowedValues,
-        param.constraints.options,
+    options = canonicalizeValues(opt.allowedValues, param.type);
+    if (constraintOptions) {
+      options = filterValues(
+        options as string[],
+        constraintOptions,
         param.type,
       );
     }
-    return (
-      <Select
-        clearable
-        {...props}
-        defaultValue={
-          typeof opt?.defaultValue === "boolean"
-            ? undefined
-            : canonicalizeValue(opt?.defaultValue, param.type)
-        }
-        data={allowedValues}
-      />
-    );
-  } else if (param.constraints.options) {
-    const constraintOptions = param.constraints.options.map((v) => ({
-      label: v.label || v.value, // Override not set or empty ("") label
-      value: v.value,
+  } else if (constraintOptions) {
+    options = constraintOptions.map((v) => ({
+      label: v.label || String(v.value), // Override not set or empty ("") label
+      value: typeof v.value === "number" ? v.value : String(v.value),
     }));
+  }
+
+  if (options || isTaskOption(param.constraints.options)) {
     return (
       <Select
         clearable
         {...props}
-        defaultValue={
-          typeof opt?.defaultValue === "boolean"
-            ? undefined
-            : canonicalizeValue(opt?.defaultValue, param.type)
-        }
-        data={constraintOptions}
+        defaultValue={canonicalizeValue(defaultValue, param.type)}
+        data={options ?? []}
+        loading={taskBackedConstraintLoading}
+        error={taskBackedConstraintError}
       />
     );
   }
@@ -287,7 +342,9 @@ export const validateParameterOptions = <TOutput,>(
         return `allowedValues for param ${opt.slug} must have length at least 2`;
       }
 
-      const constraints = param.constraints.options?.map((v) => v.value);
+      const constraints = isConstraintOptions(param.constraints.options)
+        ? param.constraints.options.map((v) => v.value)
+        : undefined;
       // Check that all values are valid
       let valuesToCheck: (string | boolean | Date | number)[] =
         opt.allowedValues || [];
@@ -315,7 +372,7 @@ export const validateParameterOptions = <TOutput,>(
  * Converts `value` to a string.
  */
 const canonicalizeValue = (
-  value: string | number | Date | undefined,
+  value: Date | ParamValue,
   type: string,
 ): string | undefined => {
   if (value === undefined) {
@@ -324,23 +381,26 @@ const canonicalizeValue = (
   if (value instanceof Date) {
     return value.toISOString();
   }
-  if (typeof value === "number") {
+  if (typeof value === "number" || typeof value === "boolean") {
     return String(value);
   }
-  if (type === "date") {
-    // For dates, string values are allowed. We canonicalize string values by
-    // getting the ISO format string. We need to check if date.getTime() has a
-    // valid value, because this function runs before validation, and toISOString
-    // will crash the view if the date is invalid. We take the first 10 characters
-    // because the backend expects a date format that looks like "2006-01-02".
-    const date = dayjs(value);
-    return date.isValid() ? date.format("YYYY-MM-DD") : "";
+  if (typeof value === "string") {
+    if (type === "date") {
+      // For dates, string values are allowed. We canonicalize string values by
+      // getting the ISO format string. We need to check if date.getTime() has a
+      // valid value, because this function runs before validation, and toISOString
+      // will crash the view if the date is invalid. We take the first 10 characters
+      // because the backend expects a date format that looks like "2006-01-02".
+      const date = dayjs(value);
+      return date.isValid() ? date.format("YYYY-MM-DD") : "";
+    } else if (type === "datetime") {
+      const date = dayjs(value);
+      return date.isValid() ? date.toISOString() : "";
+    } else {
+      return value;
+    }
   }
-  if (type === "datetime") {
-    const date = dayjs(value);
-    return date.isValid() ? date.toISOString() : "";
-  }
-  return value;
+  return JSON.stringify(value);
 };
 
 /**
@@ -378,12 +438,12 @@ const canonicalizeValues = (
  */
 const filterValues = (
   values: string[],
-  constraints: { label: string; value: string }[],
+  constraints: ConstraintOption[],
   type: string,
 ): string[] => {
   if (type === "date" || type === "datetime") {
     const constraintValues = constraints.map((v) =>
-      new Date(v.value).getTime(),
+      new Date(String(v.value)).getTime(),
     );
     return values.filter((v) =>
       constraintValues.includes(new Date(v).getTime()),
@@ -392,4 +452,88 @@ const filterValues = (
     const constraintValues = constraints.map((v) => v.value);
     return values.filter((v) => constraintValues.includes(v));
   }
+};
+
+/**
+ * useTaskBackedConstraintOptions evaluates and executes the task specified in the constraint options and
+ * returns the output as constraint options.
+ */
+const useTaskBackedConstraintOptions = ({
+  param,
+  paramValues: inputParamValues,
+  enabled: inputEnabled = true,
+}: {
+  param: Parameter;
+  paramValues: ParamValues;
+  enabled?: boolean;
+}) => {
+  const [paramValues, setParamValues] = useState(inputParamValues);
+  const [enabled, setEnabled] = useState(inputEnabled);
+  const debounced = useDebouncedCallback<(pv: typeof inputParamValues) => void>(
+    (pv) => {
+      setParamValues(pv);
+    },
+    500,
+  );
+  useEffect(() => {
+    // Debounce paramValues so we don't execute the task every time something changes.
+    debounced(inputParamValues);
+  }, [debounced, inputParamValues]);
+
+  useEffect(() => {
+    // If the enabled state changes, immediately set the paramValues to the inputParamValues.
+    setParamValues(inputParamValues);
+    setEnabled(inputEnabled);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inputEnabled]);
+
+  const taskBackedOptions = isTaskOption(param.constraints.options)
+    ? param.constraints.options
+    : undefined;
+
+  // Evaluate any templates that exist in the task params.
+  const taskBackedParams = Object.entries(taskBackedOptions?.params ?? {});
+  const taskBackedParamTemplates = taskBackedParams.map((p) =>
+    isTemplate(p[1]) ? p[1] : "",
+  );
+  const { results, errors, initialLoading } = useEvaluateTemplates(
+    enabled ? taskBackedParamTemplates : undefined,
+    {
+      params: paramValues,
+    },
+  );
+  const evaluatedTaskBackedParamMap: [string, ParamValue][] =
+    taskBackedParams.map((p, i) => {
+      if (isTemplate(p[1])) {
+        return [p[0], results[i] as ParamValue];
+      }
+      return p;
+    });
+  const evaluatedTaskBackedParams = Object.fromEntries(
+    evaluatedTaskBackedParamMap,
+  );
+
+  // Execute the task once param evaluation is complete.
+  const {
+    output: taskBackedOutput,
+    error: executeError,
+    loading: isExecuting,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } = useTaskQuery<any>({
+    slug: taskBackedOptions?.slug ?? "",
+    params: evaluatedTaskBackedParams,
+    enabled: enabled && !initialLoading && !!taskBackedOptions?.slug,
+  });
+  // Convert the task output to constraint options.
+  const data = taskBackedOutput ? outputToData(taskBackedOutput) : null;
+  const constraintOptions = data?.map((d) => ({
+    value: typeof d === "object" ? d.value : d,
+    label: typeof d === "object" ? d.label || String(d.value) : String(d),
+  }));
+
+  return {
+    constraintOptions,
+    error: [...errors, executeError?.message].filter((e) => !!e).join("\n"),
+    isLoading: initialLoading || isExecuting,
+  };
 };
