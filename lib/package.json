@@ -33,7 +33,7 @@
     "cypress:open": "TZ=UTC cypress open"
   },
   "dependencies": {
-    "@airplane/lib": "0.2.73",
+    "@airplane/lib": "0.2.75",
     "@babel/runtime": "7.22.15",
     "@codemirror/autocomplete": "6.9.1",
     "@codemirror/lang-javascript": "6.2.1",
@@ -55,7 +55,7 @@
     "@tanstack/react-query": "4.35.3",
     "@types/object-inspect": "1.8.2",
     "@uiw/react-codemirror": "4.21.13",
-    "airplane": "0.2.73",
+    "airplane": "0.2.75",
     "codemirror": "6.0.1",
     "currency-symbol-map": "5.1.0",
     "dayjs": "1.11.9",

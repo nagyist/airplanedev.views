@@ -21,6 +21,15 @@
     cross-fetch "4.0.0"
     uuid "9.0.0"
 
+"@airplane/lib@0.2.75":
+  version "0.2.75"
+  resolved "https://registry.yarnpkg.com/@airplane/lib/-/lib-0.2.75.tgz#4af053ba46b4b0f48b20dbabcb86000dfe840174"
+  integrity sha512-JkkPHyMNPiaEBy4Wfzxl+J3KXn1Enzir2uB/L6GZMQKdoyepOGMlHznKAOlTXEZiCD4dXdTz4HDLXznOHTxqJA==
+  dependencies:
+    agentkeepalive "^4.3.0"
+    cross-fetch "4.0.0"
+    uuid "9.0.1"
+
 "@ampproject/remapping@^2.2.0":
   version "2.2.1"
   resolved "https://registry.yarnpkg.com/@ampproject/remapping/-/remapping-2.2.1.tgz#99e8e11851128b8702cd57c33684f1d0f260b630"
@@ -4551,10 +4560,10 @@ aggregate-error@^3.0.0:
     clean-stack "^2.0.0"
     indent-string "^4.0.0"
 
-airplane@0.2.73:
-  version "0.2.73"
-  resolved "https://registry.yarnpkg.com/airplane/-/airplane-0.2.73.tgz#efce7573347c5d57b1a232157762d0332d8f12e7"
-  integrity sha512-4OvGzn8hqWAOjoWeJi2dInOusbQyMpqH3RrGA3BnhEVHqcFn8OzBpKFT7xEbvezH7rg1XEH/Mk2eG5msKemK3g==
+airplane@0.2.75:
+  version "0.2.75"
+  resolved "https://registry.yarnpkg.com/airplane/-/airplane-0.2.75.tgz#6154f9a6717659ad3e8fbfcd056b529607d1ba2c"
+  integrity sha512-nCKl6WE5JzxS7f3JL4JARZz06WAa1zFlKuZEHOZOww5F6Q83J1xAD6sMAJzDDMCKnnO7Wd5BmZWg/20PMvl0oA==
   dependencies:
     "@airplane/lib" "0.2.73"
     "@anthropic-ai/sdk" "0.4.4"
@@ -4563,9 +4572,9 @@ airplane@0.2.73:
     humanize-string "3.0.0"
     mime "^3.0.0"
     ms "3.0.0-canary.1"
-    openai "4.4.0"
+    openai "4.6.0"
     ts-dedent "2.2.0"
-    uuid "9.0.0"
+    uuid "9.0.1"
 
 ajv-formats@^2.1.1:
   version "2.1.1"
@@ -9701,10 +9710,10 @@ open@^9.1.0:
     is-inside-container "^1.0.0"
     is-wsl "^2.2.0"
 
-openai@4.4.0:
-  version "4.4.0"
-  resolved "https://registry.yarnpkg.com/openai/-/openai-4.4.0.tgz#dbaab326eb044ddec479951b245850c482678031"
-  integrity sha512-JN0t628Kh95T0IrXl0HdBqnlJg+4Vq0Bnh55tio+dfCnyzHvMLiWyCM9m726MAJD2YkDU4/8RQB6rNbEq9ct2w==
+openai@4.6.0:
+  version "4.6.0"
+  resolved "https://registry.yarnpkg.com/openai/-/openai-4.6.0.tgz#0335111cf71c608b68dbdca19f8ccbd9cfb0cd97"
+  integrity sha512-LuONkTgoe4D172raQCv+eEK5OdLGnY/M4JrUz/pxRGevZwqDqy3xhBbCeWX8QLCbFcnITYsu/VBJXZJ0rDAMpA==
   dependencies:
     "@types/node" "^18.11.18"
     "@types/node-fetch" "^2.6.4"
@@ -12114,6 +12123,11 @@ uuid@9.0.0, uuid@^9.0.0:
   version "9.0.0"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-9.0.0.tgz#592f550650024a38ceb0c562f2f6aa435761efb5"
   integrity sha512-MXcSTerfPa4uqyzStbRoTgt5XIe3x5+42+q1sDuy3R5MDk66URdLMOZe5aPX/SQd+kuYAh0FdP/pO28IkQyTeg==
+
+uuid@9.0.1:
+  version "9.0.1"
+  resolved "https://registry.yarnpkg.com/uuid/-/uuid-9.0.1.tgz#e188d4c8853cc722220392c424cd637f32293f30"
+  integrity sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==
 
 uuid@^8.3.2:
   version "8.3.2"
