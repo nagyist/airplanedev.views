@@ -9,6 +9,7 @@ import {
   ParamValue,
   ParamValues,
   Parameter,
+  Template,
   isConstraintOptions,
   isTaskOption,
   isTemplate,
@@ -492,10 +493,12 @@ const useTaskBackedConstraintOptions = ({
     : undefined;
 
   // Evaluate any templates that exist in the task params.
+  const canContainTemplate = (v: ParamValue): v is Template | string =>
+    isTemplate(v) || typeof v === "string";
   const taskBackedParams = Object.entries(taskBackedOptions?.params ?? {});
-  const taskBackedParamTemplates = taskBackedParams.map((p) =>
-    isTemplate(p[1]) ? p[1] : "",
-  );
+  const taskBackedParamTemplates = taskBackedParams.map((p) => {
+    return canContainTemplate(p[1]) ? p[1] : "";
+  });
   const { results, errors, initialLoading } = useEvaluateTemplates(
     enabled ? taskBackedParamTemplates : undefined,
     {
@@ -504,7 +507,7 @@ const useTaskBackedConstraintOptions = ({
   );
   const evaluatedTaskBackedParamMap: [string, ParamValue][] =
     taskBackedParams.map((p, i) => {
-      if (isTemplate(p[1])) {
+      if (canContainTemplate(p[1])) {
         return [p[0], results[i] as ParamValue];
       }
       return p;

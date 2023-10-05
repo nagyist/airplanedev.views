@@ -1410,7 +1410,9 @@ describe("Form", () => {
   });
 
   describe("task backed params", () => {
+    let evaluateSpy: jest.Mock;
     beforeEach(() => {
+      evaluateSpy = jest.fn();
       server.use(
         rest.get("http://api/v0/tasks/getTaskReviewers", (_, res, ctx) => {
           return res(
@@ -1436,10 +1438,8 @@ describe("Form", () => {
                         options: {
                           slug: "list_of_things",
                           params: {
-                            param: {
-                              __airplaneType: "template",
-                              raw: "{{true}}",
-                            },
+                            param: "{{true}}",
+                            param2: "bar",
                           },
                         },
                       },
@@ -1452,6 +1452,7 @@ describe("Form", () => {
         }),
         rest.post("http://api/i/templates/evaluate", async (req, res, ctx) => {
           const body = await req.json();
+          evaluateSpy();
           if (body.value === "{{true}}") {
             return res(
               ctx.json({
@@ -1503,6 +1504,7 @@ describe("Form", () => {
         long_text: "45",
         task_backed: "Thing1",
       });
+      expect(evaluateSpy).toHaveBeenCalledTimes(1);
     });
   });
 });

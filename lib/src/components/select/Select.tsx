@@ -132,8 +132,11 @@ const ConnectedSelect = (props: ConnectedSelectProps) => {
     onChange: __,
     defaultDisabled: ___,
     defaultValue: ____,
+    error: propsError,
     ...restProps
   } = props;
+
+  const error = propsError || inputProps.error;
 
   const newData = data.map((item) => {
     if (typeof item === "string") {
@@ -150,6 +153,7 @@ const ConnectedSelect = (props: ConnectedSelectProps) => {
       {...defaultProps}
       {...inputProps}
       {...restProps}
+      error={error}
     />
   );
 };
