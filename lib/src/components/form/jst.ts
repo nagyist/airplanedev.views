@@ -232,6 +232,7 @@ export const useEvaluateTemplates = (
           {
             value: raw,
             lookupMaps: args,
+            disableDefaultLookupMaps: true,
           },
         );
       } catch (e: unknown) {

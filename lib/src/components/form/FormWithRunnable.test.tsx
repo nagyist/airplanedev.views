@@ -920,7 +920,7 @@ describe("Form", () => {
             }),
           );
         }),
-        rest.post("http://api/i/templates/evaluate", async (req, res, ctx) => {
+        rest.post("http://api/v0/templates/evaluate", async (req, res, ctx) => {
           const body = await req.json();
           if (
             body.value === "{{true}}" &&
@@ -987,7 +987,7 @@ describe("Form", () => {
             }),
           );
         }),
-        rest.post("http://api/i/templates/evaluate", async (_, res, ctx) => {
+        rest.post("http://api/v0/templates/evaluate", async (_, res, ctx) => {
           // Return an error.
           return res(ctx.status(403, "Some error"));
         }),
@@ -1050,7 +1050,7 @@ describe("Form", () => {
             }),
           );
         }),
-        rest.post("http://api/i/templates/evaluate", async (req, res, ctx) => {
+        rest.post("http://api/v0/templates/evaluate", async (req, res, ctx) => {
           const body = await req.json();
           if (
             body.value === "{{true}}" &&
@@ -1223,7 +1223,7 @@ describe("Form", () => {
           }),
         );
       }),
-      rest.post("http://api/i/templates/evaluate", async (req, res, ctx) => {
+      rest.post("http://api/v0/templates/evaluate", async (req, res, ctx) => {
         const body = await req.json();
         if (
           body.value === "{{true}}" &&
@@ -1290,7 +1290,7 @@ describe("Form", () => {
           }),
         );
       }),
-      rest.post("http://api/i/templates/evaluate", async (_, res, ctx) => {
+      rest.post("http://api/v0/templates/evaluate", async (_, res, ctx) => {
         // Return an error.
         return res(ctx.status(403, "Some error"));
       }),
@@ -1353,7 +1353,7 @@ describe("Form", () => {
           }),
         );
       }),
-      rest.post("http://api/i/templates/evaluate", async (req, res, ctx) => {
+      rest.post("http://api/v0/templates/evaluate", async (req, res, ctx) => {
         const body = await req.json();
         if (
           body.value === "{{true}}" &&
@@ -1450,7 +1450,7 @@ describe("Form", () => {
             }),
           );
         }),
-        rest.post("http://api/i/templates/evaluate", async (req, res, ctx) => {
+        rest.post("http://api/v0/templates/evaluate", async (req, res, ctx) => {
           const body = await req.json();
           evaluateSpy();
           if (body.value === "{{true}}") {
