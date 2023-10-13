@@ -160,10 +160,18 @@ export const useUploadAirplaneFiles = ({
                 onLoadEnd?.(file);
               });
               xhr.open("PUT", writeOnlyURL);
-              xhr.setRequestHeader(
-                "X-Goog-Content-Length-Range",
-                `0,${file.size}`,
-              );
+
+              const parsedURL = new URL(writeOnlyURL);
+              if (parsedURL.hostname.endsWith(".windows.net")) {
+                // Need to set extra header for Azure PUTs
+                xhr.setRequestHeader("x-ms-blob-type", "BlockBlob");
+              } else {
+                xhr.setRequestHeader(
+                  "X-Goog-Content-Length-Range",
+                  `0,${file.size}`,
+                );
+              }
+
               xhr.send(file);
             });
 
