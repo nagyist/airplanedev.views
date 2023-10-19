@@ -32,6 +32,7 @@ export const Default = () => {
         foldGutter={foldGutterState.value}
         required
         language={inputState.value}
+        defaultValue="const a = 1;"
       />
       <Select
         id="select"
@@ -61,6 +62,7 @@ export const DarkMode = () => {
         foldGutter={foldGutterState.value}
         theme="dark"
         language={inputState.value}
+        defaultValue="const a = 1;"
       />
       <Select
         id="select"
