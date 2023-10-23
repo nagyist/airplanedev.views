@@ -8,13 +8,14 @@ import { CommonStylingProps } from "components/styling.types";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type State = Record<string, any>;
 
+export type ParamValue = string | number | boolean | Date;
 export type FieldOption = {
   /** The field slug. */
   slug: string;
   /** The value assigned to the field. */
-  value?: string | number | boolean | Date;
+  value?: ParamValue | ParamValue[];
   /** The default value for the field. Ignored if `value` is set. */
-  defaultValue?: string | number | boolean | Date;
+  defaultValue?: ParamValue | ParamValue[];
   /**
    * The set of allowed values for the field. Ignored if `value` is set. This
    * prop is only valid if there are at least two allowed values, so boolean

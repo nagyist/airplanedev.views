@@ -61,7 +61,7 @@ export const MultiSelect = <
   } else {
     return (
       <ComponentErrorBoundary componentName={MultiSelect.displayName}>
-        <ConnectedMultiSelect {...props} />{" "}
+        <ConnectedMultiSelect {...props} />
       </ComponentErrorBoundary>
     );
   }
@@ -143,8 +143,11 @@ const ConnectedMultiSelect = (props: ConnectedMultiSelectProps) => {
     onChange: __,
     defaultDisabled: ___,
     defaultValue: ____,
+    error: propsError,
     ...restProps
   } = props;
+
+  const error = propsError || inputProps.error;
 
   const newData = data.map((item) => {
     if (typeof item === "string") {
@@ -161,6 +164,7 @@ const ConnectedMultiSelect = (props: ConnectedMultiSelectProps) => {
       {...defaultProps}
       {...inputProps}
       {...restProps}
+      error={error}
     />
   );
 };

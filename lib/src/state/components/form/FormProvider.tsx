@@ -14,7 +14,8 @@ export type InputType =
   | "select"
   | "date-picker"
   | "radio-group"
-  | "multi-select";
+  | "multi-select"
+  | "multi-input";
 type FormTypeByID = Record<string, InputType>;
 
 export type FormContextType = {

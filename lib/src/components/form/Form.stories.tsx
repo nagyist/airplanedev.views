@@ -503,6 +503,62 @@ const mockData = [
                 optional: true,
               },
             },
+            {
+              slug: "multi",
+              name: "Multi short text",
+              type: "string",
+              multi: true,
+              desc: "This is a multi short text field",
+              default: ["cat", "dog"],
+              constraints: {},
+            },
+            {
+              slug: "multi3",
+              name: "Multi int",
+              type: "integer",
+              multi: true,
+              desc: "This is a multi number field",
+              default: [1, 2],
+              constraints: {
+                optional: true,
+              },
+            },
+            {
+              slug: "multi4",
+              name: "Multi JSON",
+              type: "json",
+              multi: true,
+              desc: "This is a multi json field",
+              default: [{ a: 1 }, { b: 2 }],
+              constraints: {
+                optional: true,
+              },
+            },
+            {
+              slug: "multi2",
+              name: "Multi short text with options",
+              type: "string",
+              multi: true,
+              desc: "This is a multi short text field with options",
+              default: ["cat", "dog"],
+              constraints: {
+                optional: true,
+                options: [
+                  {
+                    label: "Cat",
+                    value: "cat",
+                  },
+                  {
+                    label: "Dog",
+                    value: "dog",
+                  },
+                  {
+                    label: "Fish",
+                    value: "fish",
+                  },
+                ],
+              },
+            },
           ],
         },
       },
@@ -640,13 +696,14 @@ NoPermissions.parameters = {
 };
 
 export const WithTask = () => {
-  const { id, values } = useComponentState<FormState>("formid");
+  const { id, values, reset } = useComponentState<FormState>("formid");
   const { value } = useComponentState<TextInputState>("long_text");
   return (
     <>
       <Text>{`All form values: ${JSON.stringify(values)}`}</Text>
       <Text>{`Textarea value: ${value}`}</Text>
       <Form task="every_optional_param" id={id} />
+      <Button onClick={reset}>Reset</Button>
     </>
   );
 };
@@ -659,8 +716,8 @@ export const ShownAndHiddenFields = () => {
     <Form
       task={{
         slug: "every_optional_param",
-        shownFields: ["long_text", "date", "fake1"],
-        hiddenFields: ["sql", "date", "fake2"],
+        shownFields: ["long_text", "date", "fake1", "multi"],
+        hiddenFields: ["sql", "date", "fake2", "multi2", "multi3", "multi4"],
       }}
     />
   );
@@ -696,6 +753,10 @@ export const FieldOptions = () => {
             slug: "date_and_time",
             allowedValues: ["2022-01-01", "2022-01-02"],
           },
+          { slug: "multi", defaultValue: ["cat"] },
+          { slug: "multi2", disabled: true },
+          { slug: "multi3", disabled: true },
+          { slug: "multi4", allowedValues: ["{ a: 1 }", "{ b: 1 }"] },
         ],
       }}
     />

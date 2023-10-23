@@ -1,11 +1,13 @@
 import { Input } from "@mantine/core";
 import dayjs from "dayjs";
 import json5 from "json5";
+import { isArray } from "lodash-es";
 import { ReactElement, useEffect, useRef, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 
 import {
   ConstraintOption,
+  MultiParamValue,
   ParamValue,
   ParamValues,
   Parameter,
@@ -19,13 +21,26 @@ import { CodeInput } from "components/codeinput/CodeInput";
 import { DatePicker } from "components/datepicker/DatePicker";
 import { DateTimePicker } from "components/datepicker/DateTimePicker";
 import { FileInput } from "components/fileinput/FileInput";
+import { MultiInput as MultiInputComponent } from "components/multiInput/MultiInput";
+import { MultiSelect } from "components/multiselect/MultiSelect";
 import { NumberInput } from "components/number/NumberInput";
 import { Select, outputToData } from "components/select/Select";
 import { Textarea } from "components/textarea/Textarea";
 import { TextInput } from "components/textinput/TextInput";
 import { useTaskQuery } from "state";
+import { useRegisterFormInput } from "state/components/form/useRegisterFormInput";
+import { ValidateFnProp } from "state/components/input/types";
+import { useInput } from "state/components/input/useInput";
+import { useMultiInputState } from "state/components/multiInput";
+import { useComponentId } from "state/components/useId";
+import { useSyncComponentState } from "state/context/context";
 
-import { FieldOption, RunbookOptions, TaskOptions } from "./Form.types";
+import {
+  FieldOption,
+  RunbookOptions,
+  TaskOptions,
+  ParamValue as FormInputParamValue,
+} from "./Form.types";
 import { useEvaluateTemplate, useEvaluateTemplates } from "./jst";
 
 interface ParamConfig {
@@ -34,6 +49,15 @@ interface ParamConfig {
       required: boolean;
       id: string;
       label: string;
+      disabled?: boolean;
+
+      // The below props are optional when getInput must be used as a controlled component.
+
+      /** The value of the input if the input is controlled.  */
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Rather than use generics, just assume that the value is the correct type.
+      value?: any;
+      /** Called when the input value changes if the input is controlled.  */
+      onChange?: (e: unknown) => void;
     },
     component?: string,
   ) => ReactElement;
@@ -47,7 +71,7 @@ interface ParamConfig {
 
 const PARAM_CONFIG_MAP: Record<Parameter["type"], ParamConfig> = {
   boolean: {
-    getInput: (props) => <Checkbox {...props} />,
+    getInput: (props) => <Checkbox {...props} checked={props.value} />,
     validate: (val, slug) => {
       if (typeof val !== "boolean") {
         return `Value of param ${slug} must be a boolean`;
@@ -131,7 +155,12 @@ const PARAM_CONFIG_MAP: Record<Parameter["type"], ParamConfig> = {
       } else if (component === "editor-sql") {
         return <CodeInput {...props} language="sql" />;
       }
-      return <TextInput {...props} />;
+      return (
+        <TextInput
+          {...props}
+          onChange={(v) => props.onChange?.(v.target.value)}
+        />
+      );
     },
     validate: (val, slug, constraints) => {
       if (typeof val !== "string") {
@@ -209,7 +238,12 @@ export const ParameterInput = ({
     value &&
     isTaskOption(param.constraints.options) &&
     taskBackedConstraintOptionsLoaded.current &&
-    !taskBackedConstraintOptions?.some((o) => o.value === value)
+    !taskBackedConstraintOptions?.some((o) => {
+      if (isArray(value)) {
+        return value.includes(o.value);
+      }
+      return o.value === value;
+    })
   ) {
     // If the value is not in the list of task-backed constraint options, then it is invalid.
     onChange(undefined);
@@ -247,10 +281,18 @@ export const ParameterInput = ({
       if (optValidationResult) {
         return optValidationResult;
       }
-      if (param.constraints.regex && typeof e === "string") {
+      if (param.constraints.regex) {
         const regex = new RegExp(param.constraints.regex);
-        if (!regex.test(e)) {
-          return `${param.name} does not match the following pattern: ${param.constraints.regex}`;
+
+        // If the value is an array (multi param), we need to test each value.
+        let valsToTest = [e];
+        if (Array.isArray(e)) {
+          valsToTest = e;
+        }
+        for (const val of valsToTest) {
+          if (typeof val === "string" && !regex.test(val)) {
+            return `${param.name} does not match the following pattern: ${param.constraints.regex}`;
+          }
         }
       }
       if (validateEval.result) {
@@ -300,6 +342,22 @@ export const ParameterInput = ({
   }
 
   if (options || isTaskOption(param.constraints.options)) {
+    if (param.multi) {
+      // If the task has options and is multi, render a multi select.
+      return (
+        <MultiSelect
+          clearable
+          {...props}
+          defaultValue={canonicalizeValues(
+            (defaultValue as MultiParamValue) ?? [],
+            param.type,
+          )}
+          data={options ?? []}
+          loading={taskBackedConstraintLoading}
+          error={taskBackedConstraintError}
+        />
+      );
+    }
     return (
       <Select
         clearable
@@ -311,7 +369,127 @@ export const ParameterInput = ({
       />
     );
   }
+  if (param.multi) {
+    // If the task does not have options and is multi, render a multi input
+    // with the correct input component.
+
+    const persistDefaultValueType =
+      param.type === "integer" || param.type === "boolean";
+    return (
+      <MultiInput
+        id={props.id}
+        label={props.label}
+        description={props.description}
+        disabled={props.disabled}
+        paramType={param.type}
+        paramComponent={param.component}
+        required={props.required}
+        defaultValue={
+          persistDefaultValueType
+            ? (defaultValue as MultiParamValue) ?? []
+            : canonicalizeValues(
+                (defaultValue as MultiParamValue) ?? [],
+                param.type,
+              )
+        }
+        validate={props.validate}
+      />
+    );
+  }
   return PARAM_CONFIG_MAP[param.type]?.getInput(props, param.component);
+};
+
+/**
+ * MultiInput is an uncontrolled wrapper around the MultiInput component. It tracks the values in the component,
+ * syncs the values to the component state, registers it on the form, and renders the proper input component.
+ */
+const MultiInput = ({
+  id: propsId,
+  label,
+  description,
+  paramType,
+  paramComponent,
+  disabled,
+  required,
+  defaultValue = [],
+  validate,
+}: {
+  id: string;
+  label: string;
+  description?: string;
+  paramType: Parameter["type"];
+  paramComponent: Parameter["component"];
+  disabled?: boolean;
+  required?: boolean;
+  defaultValue: unknown[];
+  validate?: ValidateFnProp<unknown>;
+}) => {
+  const id = useComponentId(propsId);
+  const { state, dispatch } = useMultiInputState(id, {
+    initialState: {
+      disabled,
+      value: defaultValue,
+    },
+  });
+  const { inputProps } = useInput(
+    { required, validate },
+    state,
+    dispatch,
+    () => [],
+  );
+  useSyncComponentState(id, state);
+  useRegisterFormInput(id, "multi-input");
+  const values = state.value ?? [];
+
+  return (
+    <MultiInputComponent
+      id={id}
+      label={label}
+      description={description}
+      onAdd={() =>
+        dispatch({
+          type: "setValue",
+          value: [...(state.value ?? []), undefined],
+        })
+      }
+      onRemove={(i) => {
+        dispatch({
+          type: "setValue",
+          value: [
+            ...(state.value ?? []).slice(0, i),
+            ...(state.value ?? []).slice(i + 1),
+          ],
+        });
+      }}
+      values={values}
+      addDisabled={values.length > 0 && values[values.length - 1] == undefined}
+      required={required}
+      renderInput={({ index, value }) =>
+        PARAM_CONFIG_MAP[paramType]?.getInput(
+          {
+            required: false,
+            id: `${id}-${index}`,
+            label: "",
+            value,
+            disabled,
+            onChange: (v: unknown) => {
+              const currentValues = state.value ?? [];
+              dispatch({
+                type: "setValue",
+                value: [
+                  ...currentValues.slice(0, index),
+                  v,
+                  ...currentValues.slice(index + 1),
+                ],
+              });
+            },
+          },
+          paramComponent,
+        )
+      }
+      {...inputProps}
+    />
+  );
 };
 
 export const validateParameterOptions = <TOutput,>(
@@ -347,13 +525,26 @@ export const validateParameterOptions = <TOutput,>(
         ? param.constraints.options.map((v) => v.value)
         : undefined;
       // Check that all values are valid
-      let valuesToCheck: (string | boolean | Date | number)[] =
-        opt.allowedValues || [];
+      let valuesToCheck: FormInputParamValue[] = opt.allowedValues || [];
       if (opt.defaultValue !== undefined) {
-        valuesToCheck = [...valuesToCheck, opt.defaultValue];
+        if (param.multi && !Array.isArray(opt.defaultValue)) {
+          return `defaultValue for multi param ${opt.slug} must be an array`;
+        } else if (!param.multi && Array.isArray(opt.defaultValue)) {
+          return `defaultValue for ${opt.slug} cannot be an array`;
+        }
+        const dv = Array.isArray(opt.defaultValue)
+          ? opt.defaultValue
+          : [opt.defaultValue];
+        valuesToCheck = [...valuesToCheck, ...dv.flat()];
       }
       if (opt.value !== undefined) {
-        valuesToCheck = [...valuesToCheck, opt.value];
+        if (param.multi && !Array.isArray(opt.value)) {
+          return `value for multi param ${opt.slug} must be an array`;
+        } else if (!param.multi && Array.isArray(opt.value)) {
+          return `value for param ${opt.slug} cannot be an array`;
+        }
+        const v = Array.isArray(opt.value) ? opt.value : [opt.value];
+        valuesToCheck = [...valuesToCheck, ...v.flat()];
       }
       for (const val of valuesToCheck) {
         const validateResult = PARAM_CONFIG_MAP[param.type]?.validate(
@@ -408,30 +599,12 @@ const canonicalizeValue = (
  * Converts `values` to a string array.
  */
 const canonicalizeValues = (
-  values: Date[] | string[] | number[],
+  values: Date[] | MultiParamValue,
   type: string,
 ): string[] => {
-  if (values[0] instanceof Date) {
-    values = (values as Date[]).map((d) => d.toISOString());
-  } else if (typeof values[0] === "number") {
-    values = values.map((n) => String(n));
-  } else if (type === "date") {
-    // For dates, string values are allowed. We canonicalize string values by
-    // getting the ISO format string. We need to check if date.getTime() has a
-    // valid value, because this function runs before validation, and toISOString
-    // will crash the view if the date is invalid. We take the first 10 characters
-    // because the backend expects a date format that looks like "2006-01-02".
-    values = values.map((d) => {
-      const date = dayjs(d);
-      return date.isValid() ? date.format("YYYY-MM-DD") : "";
-    });
-  } else if (type === "datetime") {
-    values = values.map((d) => {
-      const date = dayjs(d);
-      return date.isValid() ? date.toISOString() : "";
-    });
-  }
-  return values as string[];
+  return values
+    .map((v) => canonicalizeValue(v, type))
+    .filter((v) => v !== undefined) as string[];
 };
 
 /**

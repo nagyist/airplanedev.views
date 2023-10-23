@@ -1,5 +1,7 @@
 import { createContext, useContext, useEffect } from "react";
 
+import { MultiInputState } from "state/components/multiInput/state";
+
 import { DefaultBooleanState, BooleanState } from "../components/boolean/state";
 import { DefaultButtonState, ButtonState } from "../components/button/state";
 import { DefaultChartState, ChartState } from "../components/chart/state";
@@ -54,6 +56,7 @@ export enum ComponentType {
   Tabs = "Tabs",
   Checkbox = "Checkbox",
   Switch = "Switch",
+  MultiInput = "MultiInput",
 }
 
 export type ComponentState =
@@ -70,7 +73,8 @@ export type ComponentState =
   | FormState
   | RadioGroupState
   | ChartState
-  | TabsState;
+  | TabsState
+  | MultiInputState<unknown>;
 
 export type InputComponentState =
   | SelectState

@@ -42,6 +42,7 @@ export type Parameter = {
   };
   desc?: string;
   hidden?: string;
+  multi?: boolean;
 };
 
 export interface TaskOrRunbookReviewersResponse {

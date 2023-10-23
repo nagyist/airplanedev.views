@@ -479,6 +479,9 @@ const getParamValues = (
           return [key, Array.isArray(fileVal) ? fileVal[0] : fileVal];
         } else if (paramTypes[key] === "json") {
           try {
+            if (Array.isArray(val)) {
+              return [key, val.map((v) => json5.parse(v as string))];
+            }
             return [key, json5.parse(val as string)];
           } catch {
             return [key, val];
