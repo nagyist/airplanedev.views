@@ -132,6 +132,7 @@ const ButtonWithTask = <
   setResult,
   confirm,
   onClick,
+  style,
   ...restProps
 }: ButtonPropsWithTask<TParams, TOutput> & {
   setResult?: (result: MutationState<TOutput>) => void;
@@ -208,6 +209,16 @@ const ButtonWithTask = <
     [status, canExecute, canRequest, mutate, onClick],
   );
 
+  // If the tooltip is shown, make sure to enable pointer events, otherwise the text will not be
+  // visible.
+  if (disabled) {
+    if (style) {
+      style.pointerEvents = "all";
+    } else {
+      style = { pointerEvents: "all" };
+    }
+  }
+
   return (
     <>
       <Tooltip
@@ -216,7 +227,6 @@ const ButtonWithTask = <
             ? "Missing request and execute permissions"
             : "Loading permissions..."
         }
-        wrapper="div"
         position="bottom-start"
         disabled={!disabled}
       >
@@ -226,6 +236,7 @@ const ButtonWithTask = <
           loading={loading}
           onClick={newOnClick}
           confirm={canExecute && confirmOptions}
+          style={style}
           {...restProps}
         />
       </Tooltip>
