@@ -71,7 +71,7 @@
     "react-table": "7.8.0",
     "react-table-sticky": "1.1.3",
     "style-mod": "4.1.0",
-    "use-debounce": "^9.0.4"
+    "use-debounce": "^10.0.0"
   },
   "devDependencies": {
     "@babel/core": "7.23.2",
