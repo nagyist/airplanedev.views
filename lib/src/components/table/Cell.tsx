@@ -81,6 +81,7 @@ const CellComponent = <TRowData extends object>({
       <div className={cx(classes.cellPadding, classes.cell)}>
         <Component
           value={value}
+          row={row.original}
           startEditing={canEdit ? startEditing : undefined}
         />
       </div>

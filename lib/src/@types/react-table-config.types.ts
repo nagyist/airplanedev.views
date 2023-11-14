@@ -4,7 +4,10 @@ import { ComponentType } from "react";
 import { SelectComponentProps } from "components/select/Select.types";
 import { CellType } from "components/table/Cell";
 
-export interface UseCustomCellProps<Value = any> {
+export interface UseCustomCellProps<
+  Value = any,
+  TRowData extends object = Record<string, any>,
+> {
   /** Whether the content of the column can be edited. */
   canEdit?: boolean;
   /**
@@ -38,7 +41,8 @@ export interface UseCustomCellProps<Value = any> {
   label?: string;
   /**
    * A custom component to render in the cell when you need a format that is not provided by `type`.
-   * Passed in as a callback function that takes the cell value and returns the custom component.
+   * Takes a React component with props `{ value, row, startEditing }`. The `value` prop is the value
+   * of the cell, the `row` prop is the entire row of data.
    *
    * If `canEdit` is also set for this column, a `startEditing` callback will be provided in the
    * arguments as well, which will render the editable component when called.
@@ -47,6 +51,7 @@ export interface UseCustomCellProps<Value = any> {
    */
   Component?: ComponentType<{
     value: Value;
+    row: TRowData;
     startEditing?: () => void;
   }>;
   /**

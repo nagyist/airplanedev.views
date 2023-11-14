@@ -474,13 +474,16 @@ describe("Table", () => {
   describe("custom cells", () => {
     const CustomCell = ({
       value,
+      row,
       startEditing,
     }: {
       value: string;
+      row: { string: string; string2: string };
       startEditing?: () => void;
     }) => (
       <>
         <Text disableMarkdown>{`Hi ${value}`}</Text>
+        <Text disableMarkdown>{`Bye ${row.string2}`}</Text>
         <Button onClick={startEditing}>Edit</Button>
       </>
     );
@@ -497,11 +500,13 @@ describe("Table", () => {
           data={[
             {
               string: "My String",
+              string2: "My String2",
             },
           ]}
         />,
       );
       await screen.findByText("Hi My String");
+      await screen.findByText("Bye My String2");
     });
 
     it("renders editable custom cells", async () => {
@@ -537,6 +542,7 @@ describe("Table", () => {
           data={[
             {
               string: "My String",
+              string2: "My String2",
             },
           ]}
           rowActions={[
@@ -554,6 +560,7 @@ describe("Table", () => {
       await userEvent.click(await screen.findByText("b1"));
       expect(mockCallback.mock.lastCall[0]).toEqual({
         string: "Hello World",
+        string2: "My String2",
       });
     });
   });

@@ -43,7 +43,7 @@ type Column_<TRowData extends object, K extends keyof TRowData> = {
    * If you are using a task backed table, accessors are automatically inferred from the task output.
    */
   accessor: K;
-} & UseCustomCellProps<TRowData[K]>;
+} & UseCustomCellProps<TRowData[K], TRowData>;
 
 export type RowSelectionMode = "single" | "checkbox";
 export type ComponentRowAction<TRowData extends object> = (props: {
