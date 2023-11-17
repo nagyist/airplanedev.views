@@ -125,37 +125,64 @@ describe("Table", () => {
     await screen.findByText(formatDatetime(new Date(2022, 6, 7)));
   });
 
-  it("supports pagination", async () => {
-    const { getAllByRole } = render(
-      <Table columns={columns} data={data} defaultPageSize={1} />,
-    );
-    const headers = getAllByRole("columnheader");
-    expect(headers).toHaveLength(columns.length);
-    expect(headers[0].textContent).toBe("Name");
-    expect(headers[1].textContent).toBe("Phone Number");
-    let cells = getAllByRole("cell");
-    expect(cells).toHaveLength(2);
-    expect(cells[0].textContent).toBe(data[0].name);
-    expect(cells[1].textContent).toBe(data[0].phone);
+  describe("pagination", () => {
+    it("supports pagination", async () => {
+      const { getAllByRole } = render(
+        <Table columns={columns} data={data} defaultPageSize={1} />,
+      );
+      const headers = getAllByRole("columnheader");
+      expect(headers).toHaveLength(columns.length);
+      expect(headers[0].textContent).toBe("Name");
+      expect(headers[1].textContent).toBe("Phone Number");
+      let cells = getAllByRole("cell");
+      expect(cells).toHaveLength(2);
+      expect(cells[0].textContent).toBe(data[0].name);
+      expect(cells[1].textContent).toBe(data[0].phone);
 
-    const next = await screen.findByRole("button", { name: "next" });
-    const prev = await screen.findByRole("button", { name: "previous" });
+      const next = await screen.findByRole("button", { name: "next" });
+      const prev = await screen.findByRole("button", { name: "previous" });
 
-    expect(prev).toBeDisabled();
-    await screen.findByText("1 – 1 of 2");
-    await userEvent.click(next);
-    cells = await screen.findAllByRole("cell");
-    expect(cells).toHaveLength(2);
-    expect(cells[0].textContent).toBe(data[1].name);
-    expect(cells[1].textContent).toBe(data[1].phone);
+      expect(prev).toBeDisabled();
+      await screen.findByText("1 – 1 of 2");
+      await userEvent.click(next);
+      cells = await screen.findAllByRole("cell");
+      expect(cells).toHaveLength(2);
+      expect(cells[0].textContent).toBe(data[1].name);
+      expect(cells[1].textContent).toBe(data[1].phone);
 
-    expect(next).toBeDisabled();
-    await screen.findByText("2 – 2 of 2");
-    await userEvent.click(prev);
-    cells = await screen.findAllByRole("cell");
-    expect(cells).toHaveLength(2);
-    expect(cells[0].textContent).toBe(data[0].name);
-    expect(cells[1].textContent).toBe(data[0].phone);
+      expect(next).toBeDisabled();
+      await screen.findByText("2 – 2 of 2");
+      await userEvent.click(prev);
+      cells = await screen.findAllByRole("cell");
+      expect(cells).toHaveLength(2);
+      expect(cells[0].textContent).toBe(data[0].name);
+      expect(cells[1].textContent).toBe(data[0].phone);
+    });
+
+    it("resets page to 1 when there is no data on the current page", async () => {
+      const { rerender, getAllByRole } = render(
+        <Table columns={columns} data={data} defaultPageSize={1} />,
+      );
+
+      const next = await screen.findByRole("button", { name: "next" });
+      await userEvent.click(next);
+      await screen.findByText("2 – 2 of 2");
+
+      // Remove one row of data and rerender.
+      rerender(
+        <Table columns={columns} data={[data[0]]} defaultPageSize={1} />,
+      );
+
+      // There should be no next button (or pagination in general).
+      const next2 = screen.queryByRole("button", { name: "next" });
+      expect(next2).toBeFalsy();
+
+      // We should be on the first page.
+      const cells = getAllByRole("cell");
+      expect(cells).toHaveLength(2);
+      expect(cells[0].textContent).toBe(data[0].name);
+      expect(cells[1].textContent).toBe(data[0].phone);
+    });
   });
 
   it("starts resizing when holding on drag handle", async () => {

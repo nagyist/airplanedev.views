@@ -490,6 +490,14 @@ export function TableComponent<TRowData extends object>({
     if (!skipDirtyColumnIDReset) {
       setDirtyCells({});
     }
+
+    // If the data changes so that the current page is empty, go back to the first page.
+    if (pageIndex > 0) {
+      const startItemNum = pageIndex * pageSize + 1;
+      if (startItemNum > allRows.length) {
+        gotoPage(0);
+      }
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- Only run this when tableData changes.
   }, [tableData]);
 
