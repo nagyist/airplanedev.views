@@ -54,11 +54,13 @@ export const useRouter = (): Router => {
         }),
       ]);
 
+      if (queryParams === undefined) {
+        queryParams = new URLSearchParams();
+      }
       if (viewData?.isLocal) {
-        if (queryParams === undefined) {
-          queryParams = new URLSearchParams();
-        }
-        return `${webHost}/studio/views/${viewSlug}?${queryParams}`;
+        const studioQueryParams = new URLSearchParams(queryParams);
+        studioQueryParams.append("view", viewSlug);
+        return `${webHost}/studio?${studioQueryParams}`;
       }
       return `${webHost}/views/${viewData.id}?${queryParams}`;
     },
@@ -78,11 +80,13 @@ export const useRouter = (): Router => {
           return await fetcher.get<string>(WEB_HOST_GET, {});
         }),
       ]);
+      if (queryParams === undefined) {
+        queryParams = new URLSearchParams();
+      }
       if (taskMetadata?.isLocal) {
-        if (queryParams === undefined) {
-          queryParams = new URLSearchParams();
-        }
-        return `${webHost}/studio/tasks/${taskSlug}?${queryParams}`;
+        const studioQueryParams = new URLSearchParams(queryParams);
+        studioQueryParams.append("task", taskSlug);
+        return `${webHost}/studio?${studioQueryParams}`;
       }
       return `${webHost}/tasks/${taskMetadata.id}?${queryParams}`;
     },
@@ -95,12 +99,14 @@ export const useRouter = (): Router => {
       const webHost = await queryClient.fetchQuery([WEB_HOST_GET], async () => {
         return await fetcher.get<string>(WEB_HOST_GET, {});
       });
+      if (queryParams === undefined) {
+        queryParams = new URLSearchParams();
+      }
       // TODO: VIEW-692 query API for local or remote run instead of looking at run ID
       if (isLocalDevRunID(runID)) {
-        if (queryParams === undefined) {
-          queryParams = new URLSearchParams();
-        }
-        return `${webHost}/studio/runs/${runID}?${queryParams}`;
+        const studioQueryParams = new URLSearchParams(queryParams);
+        studioQueryParams.append("run", runID);
+        return `${webHost}/studio?${studioQueryParams}`;
       } else if (isRemoteRunID(runID)) {
         return `${webHost}/runs/${runID}?${queryParams}`;
       } else throw new Error("Run ID is not local or remote.");
