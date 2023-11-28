@@ -49,7 +49,10 @@ export const setEnvVars = (
     additionalEnvVars?.AIRPLANE_USE_SELF_HOSTED_INPUTS === "true";
 };
 
-export const getExecuteOptions = (source: "query" | "mutation") => {
+export const getExecuteOptions = (
+  source: "query" | "mutation",
+  allowCachedMaxAge?: number,
+) => {
   return {
     host: AIRPLANE_API_HOST,
     token: AIRPLANE_TOKEN,
@@ -58,5 +61,6 @@ export const getExecuteOptions = (source: "query" | "mutation") => {
     source: `view-${source}`,
     headers: { "X-Airplane-View-Token": AIRPLANE_VIEW_TOKEN },
     useSelfHostedInputs: AIRPLANE_USE_SELF_HOSTED_INPUTS,
+    allowCachedMaxAge,
   };
 };

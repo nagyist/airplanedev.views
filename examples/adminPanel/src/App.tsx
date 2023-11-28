@@ -31,7 +31,7 @@ const AdminPanelApp = () => {
         <Table<ListTeamsOutputs, ListTeamsParams, ListTeamsOutputs[]>
           id={teamsTableState.id}
           title="Teams"
-          task="list_teams"
+          task={{ slug: "list_teams", allowCachedMaxAge: 600 }}
           columns={[
             { accessor: "signup_date", label: "Signup date", type: "datetime" },
             { accessor: "company_name", label: "Company name", canEdit: true },
@@ -70,6 +70,7 @@ const AdminPanelApp = () => {
             task={{
               slug: "list_team_users",
               params: { account_id: selectedTeamID },
+              allowCachedMaxAge: 600,
             }}
             rowSelection="checkbox"
           />

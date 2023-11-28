@@ -39,6 +39,11 @@ export type UseTaskQueryOptions<
    */
   refetchInterval?: number;
   /**
+   * If set, queries with identical inputs within the configured age
+   * (in seconds) may get cached results.
+   */
+  allowCachedMaxAge?: number;
+  /**
    * If set to true, the task will be executed on mount.
    * @default true
    */
@@ -120,6 +125,7 @@ export const useTaskQuery = <
     params,
     enabled: enabledOption = true,
     refetchInterval,
+    allowCachedMaxAge,
     executeOnMount = true,
     executeOnWindowFocus = false,
     executeOnReconnect = true,
@@ -136,6 +142,7 @@ export const useTaskQuery = <
           slug,
           "query",
           params,
+          allowCachedMaxAge,
         );
         if (typeof runID === "object") {
           throw runID;
@@ -147,6 +154,7 @@ export const useTaskQuery = <
           "query",
           params,
           runID,
+          allowCachedMaxAge,
         );
         if (isExecuteTaskError<TOutput>(r)) {
           throw r;

@@ -1,6 +1,7 @@
-import { RunTerminationError, executeBackground } from "airplane";
+import { RunTerminationError, executeBackgroundWithCacheInfo } from "airplane";
 import { getRun } from "airplane/api";
 import type { ParamValues, Run } from "airplane/api";
+import dayjs from "dayjs";
 import hash from "object-hash";
 
 import { isGenericExecuteError } from "client/status";
@@ -38,15 +39,25 @@ export const executeTask = async <
   params?: TParams,
   /** Including this indicates that the caller already executed the task and this function does not have to do the initial execution. */
   runID?: string,
+  allowCachedMaxAge?: number,
 ): Promise<ExecuteTaskResult<TOutput>> => {
   try {
-    const executeOptions = getExecuteOptions(executeType);
+    const executeOptions = getExecuteOptions(executeType, allowCachedMaxAge);
     let executedRunID = runID ?? "";
     if (!executedRunID) {
-      executedRunID = await executeBackground(slug, params, executeOptions);
+      const resp = await executeBackgroundWithCacheInfo(
+        slug,
+        params,
+        executeOptions,
+      );
+      executedRunID = resp.runID;
+      const cacheFetchedAt = resp.isCached ? dayjs().toISOString() : undefined;
+
       sendViewMessage({
         type: "start_run",
         runID: executedRunID,
+        isCached: resp.isCached,
+        cacheFetchedAt,
         executeType,
       });
     }
@@ -99,18 +110,26 @@ export const executeTaskBackground = async <
   slug: string,
   executeType: "query" | "mutation",
   params?: TParams,
+  allowCachedMaxAge?: number,
 ): Promise<ExecuteTaskError<TOutput> | string> => {
   try {
-    const executeOptions = getExecuteOptions(executeType);
-    const runID = await executeBackground(slug, params, executeOptions);
+    const executeOptions = getExecuteOptions(executeType, allowCachedMaxAge);
+    const resp = await executeBackgroundWithCacheInfo(
+      slug,
+      params,
+      executeOptions,
+    );
+    const cacheFetchedAt = resp.isCached ? dayjs().toISOString() : undefined;
 
     sendViewMessage({
       type: "start_run",
-      runID,
+      runID: resp.runID,
+      isCached: resp.isCached,
+      cacheFetchedAt,
       executeType,
     });
 
-    return runID;
+    return resp.runID;
   } catch (e) {
     return handleExecutionError<TOutput>(e, slug);
   }

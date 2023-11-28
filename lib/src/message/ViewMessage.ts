@@ -15,6 +15,8 @@ type StartRunMessage = {
   type: "start_run";
   runID: string;
   executeType?: "query" | "mutation";
+  isCached?: boolean;
+  cacheFetchedAt?: string;
 };
 
 type StartSessionMessage = {

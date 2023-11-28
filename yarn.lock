@@ -12,10 +12,10 @@
   resolved "https://registry.yarnpkg.com/@adobe/css-tools/-/css-tools-4.3.1.tgz#abfccb8ca78075a2b6187345c26243c1a0842f28"
   integrity sha512-/62yikz7NLScCGAAST5SHdnjaDJQBDq0M2muyRTpf2VQhw6StBg2ALiu73zSJQ4fMVLA+0uBhBHAle7Wg+2kSg==
 
-"@airplane/lib@0.2.79":
-  version "0.2.79"
-  resolved "https://registry.yarnpkg.com/@airplane/lib/-/lib-0.2.79.tgz#7d9012a2b39e3b1cd1cab50664d39f6c2d0e7870"
-  integrity sha512-jexl2uXXbtcT6+6LBPI63wnDza1Ptld8h0Cn0V63HwgkKlHQ+vDuwW9yRru5oZXI19Tx5WDHw7okQEbzabPzOw==
+"@airplane/lib@0.2.85":
+  version "0.2.85"
+  resolved "https://registry.yarnpkg.com/@airplane/lib/-/lib-0.2.85.tgz#818ff6f446bbf23d331d219f30ecd516c93c3368"
+  integrity sha512-E6RC2yrqV3z2V9bUAbsEDWtaDxe7EzlNvvm6dWO9qxLT6iu+1gdtHtGZvq4rYwjKzoA6rx7iWmJFwEbCAGERGg==
   dependencies:
     agentkeepalive "^4.3.0"
     cross-fetch "4.0.0"
@@ -5016,19 +5016,19 @@ aggregate-error@^3.0.0:
     clean-stack "^2.0.0"
     indent-string "^4.0.0"
 
-airplane@0.2.79:
-  version "0.2.79"
-  resolved "https://registry.yarnpkg.com/airplane/-/airplane-0.2.79.tgz#927fc60421dd52b9ef016c441dee380e1d5d4087"
-  integrity sha512-rrLNNXpQ3Soh9okEE2pGLLrISozoYYpl8zK/HYW0ckcGCu/wBQxrz/7SpPb0pCJaJ1WeWZoiMCaaBKrfN5Fzmg==
+airplane@0.2.85:
+  version "0.2.85"
+  resolved "https://registry.yarnpkg.com/airplane/-/airplane-0.2.85.tgz#bb32c03e5525dbd2ffdf1e0ad52ee40ff7940df0"
+  integrity sha512-SzOkQ6c53jVzBa3UrywbMNJGYgmqlquTiBpFY5tcXCP5ZbfogmgHgVWhFe8UTPbdZmeJeCKT50aAZWHZvjwwjQ==
   dependencies:
-    "@airplane/lib" "0.2.79"
+    "@airplane/lib" "0.2.85"
     "@anthropic-ai/sdk" "0.4.4"
     "@opentelemetry/api" "1.2.0"
     fast-equals "5.0.1"
     humanize-string "3.0.0"
     mime "^3.0.0"
     ms "3.0.0-canary.1"
-    openai "4.11.1"
+    openai "4.12.1"
     ts-dedent "2.2.0"
     uuid "9.0.1"
 
@@ -10206,10 +10206,10 @@ open@^9.1.0:
     is-inside-container "^1.0.0"
     is-wsl "^2.2.0"
 
-openai@4.11.1:
-  version "4.11.1"
-  resolved "https://registry.yarnpkg.com/openai/-/openai-4.11.1.tgz#c2ed9b5e58c3c626b8d43e4eae0cfdbcd44cc844"
-  integrity sha512-GU0HQWbejXuVAQlDjxIE8pohqnjptFDIm32aPlNT1H9ucMz1VJJD0DaTJRQsagNaJ97awWjjVLEG7zCM6sm4SA==
+openai@4.12.1:
+  version "4.12.1"
+  resolved "https://registry.yarnpkg.com/openai/-/openai-4.12.1.tgz#f1ef4283197cf2ef932abc55afeae8a2182d8fe6"
+  integrity sha512-EAoUwm4dtiWvFwBhOCK/VfF8sj1ZU8+aAIJnfT4NyeTfrt1DM/6Gdd6fOZWTjBYryTAqu9Vpb5+9Wu6JMtm/gA==
   dependencies:
     "@types/node" "^18.11.18"
     "@types/node-fetch" "^2.6.4"
