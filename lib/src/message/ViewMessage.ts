@@ -82,7 +82,8 @@ export type ConsoleMessage =
 
 export type PeekMessage = {
   type: "peek";
-  peekType: "view" | "task";
+  peekType: "view" | "task" | "page" | "runbook";
+  // Page path will be sent in the slug field
   slug: string;
   params?: Record<string, string | undefined>;
 };

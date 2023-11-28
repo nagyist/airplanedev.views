@@ -180,24 +180,72 @@ describe("useRouter", () => {
       );
     });
 
-    it("errors when both view and task are provided", async () => {
+    it("peeks a runbook", () => {
       const { result } = renderHook(() => useRouter(), {
         wrapper: QueryProvider,
       });
 
-      expect(() => {
-        result.current.peek({ task: "myTask", view: "myView" });
-      }).toThrowError("Cannot specify both view and task");
+      result.current.peek({ runbook: "myRunbook" });
+      expect(window.parent.postMessage).toBeCalledWith(
+        { type: "peek", peekType: "runbook", slug: "myRunbook" },
+        "*",
+      );
     });
 
-    it("errors when neither view or task are provided", async () => {
+    it("peeks a runbook with params", () => {
+      const { result } = renderHook(() => useRouter(), {
+        wrapper: QueryProvider,
+      });
+
+      result.current.peek({ runbook: "myRunbook", params: { foo: "bar" } });
+      expect(window.parent.postMessage).toBeCalledWith(
+        {
+          type: "peek",
+          peekType: "runbook",
+          slug: "myRunbook",
+          params: { foo: "bar" },
+        },
+        "*",
+      );
+    });
+
+    it("peeks a page", () => {
+      const { result } = renderHook(() => useRouter(), {
+        wrapper: QueryProvider,
+      });
+
+      result.current.peek({ page: "myPage" });
+      expect(window.parent.postMessage).toBeCalledWith(
+        { type: "peek", peekType: "page", slug: "myPage" },
+        "*",
+      );
+    });
+
+    it("peeks a page with params", () => {
+      const { result } = renderHook(() => useRouter(), {
+        wrapper: QueryProvider,
+      });
+
+      result.current.peek({ page: "myPage", params: { foo: "bar" } });
+      expect(window.parent.postMessage).toBeCalledWith(
+        {
+          type: "peek",
+          peekType: "page",
+          slug: "myPage",
+          params: { foo: "bar" },
+        },
+        "*",
+      );
+    });
+
+    it("errors when neither view, task, page or runbook are provided", async () => {
       const { result } = renderHook(() => useRouter(), {
         wrapper: QueryProvider,
       });
 
       expect(() => {
         result.current.peek({});
-      }).toThrowError("Must specify view or task");
+      }).toThrowError("Must specify task, view, runbook, or page");
     });
   });
 });

@@ -18,13 +18,35 @@ export type NavigateParams = {
   params?: Record<string, string | undefined>;
 };
 
-type PeekParams = {
-  /** A view slug to open in a peek. **/
-  view?: string;
-  /** A task slug to open in a peek. **/
-  task?: string;
+type PeekParamsBase = {
   params?: Record<string, string | undefined>;
 };
+
+type TaskPeekParams = {
+  /** A task slug to open in a peek. **/
+  task: string;
+} & PeekParamsBase;
+
+type ViewPeekParams = {
+  /** A view slug to open in a peek. **/
+  view: string;
+} & PeekParamsBase;
+
+type RunbookPeekParams = {
+  /** A runbook slug to open in a peek. **/
+  runbook: string;
+} & PeekParamsBase;
+
+type PagePeekParams = {
+  /** A page path to open in a peek. **/
+  page: string;
+} & PeekParamsBase;
+
+type PeekParams =
+  | TaskPeekParams
+  | ViewPeekParams
+  | RunbookPeekParams
+  | PagePeekParams;
 
 export type Router = {
   /** The parameters passed to this view. */
@@ -181,27 +203,38 @@ export const useRouter = (): Router => {
     [getHref],
   );
 
-  const peek: Router["peek"] = useCallback(({ view, task, params }) => {
+  const peek: Router["peek"] = useCallback((peekParams) => {
     if (inIframe()) {
-      if (view && task) {
-        throw new Error("Cannot specify both view and task");
-      }
-      if (view) {
+      if ("view" in peekParams && peekParams.view) {
         sendViewMessage({
           type: "peek",
           peekType: "view",
-          slug: view,
-          params,
+          slug: peekParams.view,
+          params: peekParams.params,
         });
-      } else if (task) {
+      } else if ("task" in peekParams && peekParams.task) {
         sendViewMessage({
           type: "peek",
           peekType: "task",
-          slug: task,
-          params,
+          slug: peekParams.task,
+          params: peekParams.params,
+        });
+      } else if ("runbook" in peekParams && peekParams.runbook) {
+        sendViewMessage({
+          type: "peek",
+          peekType: "runbook",
+          slug: peekParams.runbook,
+          params: peekParams.params,
+        });
+      } else if ("page" in peekParams && peekParams.page) {
+        sendViewMessage({
+          type: "peek",
+          peekType: "page",
+          slug: peekParams.page,
+          params: peekParams.params,
         });
       } else {
-        throw new Error("Must specify view or task");
+        throw new Error("Must specify task, view, runbook, or page");
       }
     }
   }, []);
