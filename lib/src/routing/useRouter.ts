@@ -19,7 +19,13 @@ export type NavigateParams = {
 };
 
 type PeekParamsBase = {
+  /** Optional params to pass through to the peek. */
   params?: Record<string, string | undefined>;
+  /**
+   * Way of opening the peek.
+   * @default "side_peek"
+   */
+  as?: "center_peek" | "side_peek";
 };
 
 type TaskPeekParams = {
@@ -211,6 +217,7 @@ export const useRouter = (): Router => {
           peekType: "view",
           slug: peekParams.view,
           params: peekParams.params,
+          as: peekParams.as,
         });
       } else if ("task" in peekParams && peekParams.task) {
         sendViewMessage({
@@ -218,6 +225,7 @@ export const useRouter = (): Router => {
           peekType: "task",
           slug: peekParams.task,
           params: peekParams.params,
+          as: peekParams.as,
         });
       } else if ("runbook" in peekParams && peekParams.runbook) {
         sendViewMessage({
@@ -225,6 +233,7 @@ export const useRouter = (): Router => {
           peekType: "runbook",
           slug: peekParams.runbook,
           params: peekParams.params,
+          as: peekParams.as,
         });
       } else if ("page" in peekParams && peekParams.page) {
         sendViewMessage({
@@ -232,6 +241,7 @@ export const useRouter = (): Router => {
           peekType: "page",
           slug: peekParams.page,
           params: peekParams.params,
+          as: peekParams.as,
         });
       } else {
         throw new Error("Must specify task, view, runbook, or page");

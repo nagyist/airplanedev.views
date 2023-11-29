@@ -88,6 +88,7 @@ export type PeekMessage = {
   // Page path will be sent in the slug field
   slug: string;
   params?: Record<string, string | undefined>;
+  as?: "side_peek" | "center_peek";
 };
 
 export type ComponentMountedMessage = {
